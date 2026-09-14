@@ -179,7 +179,20 @@ Two of the rejected forms are what he actually shipped, which is the point of th
 exercise: the shipped text was assistant-drafted and approved, and given the choice he
 picks something shorter and more direct every time.
 
-Across the three rounds: 12 questions, 6 rule changes, 6 confirmations.
+## A/B round 4 (2026-09-14), commits, PRs and the description opening
+
+| Question | Pick | Rejected |
+|---|---|---|
+| Commit subject | **B**, lowercase, same shape: "widen the slab by 1 mm: 66 -> 67" | the capitalized form he had shipped; the reason folded into the subject |
+| Commit body | **A**, none, subject only | a short prose body; bullets |
+| PR description | **B**, four labeled lines: what / why / verified / not verified | one prose paragraph (the old rule); the change plus the caveat only |
+| Listing description opening | **A**, the problem then the object, unchanged | object first; the reader's situation as a question |
+
+The commit pick also settled a contradiction: `surfaces.md` had kept "capital first
+letter" after the lowercase-everything rule of the same day.
+
+Across the four rounds: 16 questions, 8 rule changes, 8 confirmations. Rounds 2 and 4
+were mostly confirmations, which is what convergence looks like.
 
 ## Chat-only, do not publish
 

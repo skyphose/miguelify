@@ -2,7 +2,8 @@
 
 ## Commit messages
 
-Real examples he has shipped:
+Real examples he has shipped, capitalized as they were at the time. New subjects are
+lowercase, by A/B on 2026-09-14, and otherwise keep exactly this shape:
 
 ```
 Widen the slab by 1 mm: 66 -> 67
@@ -16,20 +17,35 @@ Parametric TCG deck-box insert: source, release bundle and docs
 
 The pattern:
 
-- Sentence case. Capital first letter, no trailing period.
+- Lowercase first letter, like everything else. No trailing period. "widen the slab by
+  1 mm: 66 -> 67". Chosen by A/B on 2026-09-14 over the capitalized form he had shipped
+  and over folding the reason into the subject.
 - Scope or verb first, then a colon, then the specifics. Or just the change if it
   stands alone.
 - Numeric deltas as `old -> new` with a plain ASCII arrow, never a Unicode one.
 - Semicolons to join two related changes in one commit.
 - No conventional-commit prefixes. He has never used `feat:`, `fix:` or `chore:`.
 - No emoji, no trailers, no attribution lines.
-- Body paragraphs only when the why is not obvious from the subject.
+- Subject only. A body is the exception, for when the why is genuinely not in the
+  subject, and even then it is short prose, not bullets. Confirmed by A/B on 2026-09-14:
+  offered a prose body and a bullet body for the sleeve-height commit, he took neither.
 
 ## PR descriptions
 
-- What changed, why, and what was actually verified.
-- State what was **not** verified explicitly. This is the same honesty rule as
-  everywhere else, and it is the part most likely to get dropped.
+Four labeled lines, in this order, lowercase:
+
+```
+what: slab 67 x 91 mm, two variants (coin, no coin) replacing three game layouts.
+why: the game names were a lie. nothing in either layout is game-specific.
+verified: both export from openscad, a 38 mm coin fits the well in cad.
+not verified: nothing printed at these dimensions.
+```
+
+- Chosen by A/B on 2026-09-14 over one prose paragraph carrying the same four parts and
+  over a one-liner with only the caveat.
+- The "not verified" line is never dropped. It is the same honesty rule as everywhere
+  else, and it is the part a draft loses first.
+- A line can run to two or three sentences. It cannot become a paragraph with a heading.
 - No "Generated with Claude Code" footer, no session link.
 
 ## README

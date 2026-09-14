@@ -277,13 +277,15 @@ Keep the directness. Add only the periods.
 
 See `references/surfaces.md` for the full set. The short version:
 
-- **Commit messages:** sentence case, no trailing period, scope then colon then the
-  change, concrete deltas with a plain ASCII arrow. Real examples he shipped:
-  `Widen the slab by 1 mm: 66 -> 67`, `Take the slab's height from the sleeve, not the
-  box: 88 -> 91 mm`, `Lint cleanup: add ruff, fix a Python 3.11 f-string bug, drop dead
-  imports`. No `feat:`/`fix:` conventional-commit prefixes; he does not use them.
-- **PR descriptions:** what changed and why, what was verified, what was not. No
-  generated-with footer.
+- **Commit messages:** lowercase, no trailing period, scope then colon then the change,
+  concrete deltas with a plain ASCII arrow: `widen the slab by 1 mm: 66 -> 67`,
+  `take the slab's height from the sleeve, not the box: 88 -> 91 mm`, `lint cleanup:
+  add ruff, fix a python 3.11 f-string bug, drop dead imports`. Those shipped with a
+  capital first letter; lowercase was his A/B pick on 2026-09-14. Subject only, a body
+  is the exception. No `feat:`/`fix:` conventional-commit prefixes; he does not use them.
+- **PR descriptions:** four labeled lines, `what:` `why:` `verified:` `not verified:`,
+  lowercase, in that order. Chosen by A/B on 2026-09-14 over a prose paragraph. The last
+  line is never dropped. No generated-with footer.
 - **README:** fit spec / requirements up top, honest limits before features, a table for
   variants, and a section saying what it does not do.
 - **Model listings:** title says what it is and its one differentiator. Summary line
