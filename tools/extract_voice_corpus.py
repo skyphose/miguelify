@@ -14,7 +14,9 @@ The corpus is raw chat, so two things guard it. Emails, home paths, token-shaped
 strings and every term in ../references/private.md are redacted before anything is
 written. And the tool refuses to write into a git working tree unless the target
 path is gitignored there, because a transcript dump landing in a project directory
-is exactly how it would end up committed. --force overrides that one check.
+is exactly how it would end up committed. It also refuses to write anything from
+fewer than 20 messages, so a machine with no transcripts does not overwrite a real
+profile with zeros. --force overrides both checks.
 
 The typo inventory is automatic: a word that is not in the dictionary but is one
 adjacent swap, one extra letter or one missing letter away from a word that is,
@@ -46,6 +48,7 @@ PROFILE = os.path.join(SKILL_DIR, "references", "profile.json")
 DROP_PREFIX = ("Caveat:", "[Request interrupted", "<", "This session is being continued")
 DROP_SUBSTR = ("tool_use_id", "Analysis:\nLet me chronologically")
 SHORT = 700  # above this, it is a pasted prompt or a summary, not typing
+MIN_MESSAGES = 20  # below this the counts are noise and the profile is left alone
 
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 HOMEPATH = re.compile(r"/(?:Users|home)/[^/\s]+")
@@ -276,6 +279,12 @@ def main(argv):
 
     rows = [(ts, redact(t, terms)) for ts, t in collect()]
     typed = [t for _, t in rows if len(t) < SHORT]
+    if len(typed) < MIN_MESSAGES and not force:
+        print(f"only {len(typed)} typed message(s) under ~/.claude/projects. That is not a "
+              f"corpus, and the counts would be noise.", file=sys.stderr)
+        print(f"Nothing written, previous profile kept. --force overrides. The numbers start "
+              f"to mean something around {MIN_MESSAGES} messages.", file=sys.stderr)
+        return 1
     with open(out, "w") as fh:
         for ts, text in rows:
             if len(text) < SHORT:

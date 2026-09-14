@@ -84,6 +84,8 @@ SELF_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRIVATE = os.path.join(SELF_DIR, "references", "private.md")
 PROFILE = os.path.join(SELF_DIR, "references", "profile.json")
 JARGON = os.path.join(SELF_DIR, "references", "jargon.txt")
+RULEBOOK_FILES = {"SKILL.md", "LICENSE", ".gitignore"}
+RULEBOOK_DIRS = {"references", "tools", "examples"}
 
 
 def jargon_words():
@@ -282,12 +284,10 @@ def main(argv):
             if lk:
                 leaked += report_leaks(path, lk)
 
-        # The rulebook quotes the tells it bans, so it exempts itself. README.md is
-        # ordinary public copy that happens to live here, so it does not.
-        ap = os.path.abspath(path)
-        rel = os.path.relpath(ap, SELF_DIR)
-        if ap.startswith(SELF_DIR) and not rel.startswith("..") \
-                and os.path.basename(ap) != "README.md":
+        # The rulebook quotes the tells it bans, so those files exempt themselves.
+        # Anything else, README.md included, is public copy wherever it lives.
+        rel = os.path.relpath(os.path.abspath(path), SELF_DIR)
+        if rel in RULEBOOK_FILES or rel.split(os.sep, 1)[0] in RULEBOOK_DIRS:
             print(f"{path}: skipped, this is the miguelify skill's own rulebook")
             continue
 
