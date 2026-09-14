@@ -1,8 +1,8 @@
 {
   "generated": "2026-09-14",
   "source": "user turns under 700 characters in ~/.claude/projects/**/*.jsonl",
-  "messages": 104,
-  "words": 1417,
+  "messages": 105,
+  "words": 1423,
   "counts": {
     "em_dash": 0,
     "spaced_hyphen": 26,
@@ -10,9 +10,11 @@
     "lets": 39,
     "let_s": 0,
     "can_we": 14,
-    "question": 16,
+    "question": 17,
     "bang": 2,
     "british": 0,
+    "apostrophe": 2,
+    "bare_contractions": 48,
     "starts_upper": 2,
     "ends_period": 2
   },
@@ -72,10 +74,10 @@
     }
   },
   "typos": {
-    "found": 19,
-    "words_per_typo": 75,
+    "found": 20,
+    "words_per_typo": 71,
     "classes": {
-      "swap": 9,
+      "swap": 10,
       "double": 7,
       "drop": 3
     },
@@ -88,7 +90,7 @@
         "htis",
         "jsut",
         "obisdian",
-        "tkaing"
+        "publicise"
       ],
       "double": [
         "automatally",

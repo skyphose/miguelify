@@ -22,18 +22,19 @@ It is now built for **`coin_d = 38.0`** — a ⌀38.8 mm well, which swallows ev
 ## after
 
 ```
-**this was wrong for a long time and is worth recording.** the well was built around
-`coin_d = 26.0`, a figure assumed rather than looked up. official pokemon coins actually run
-**29.8-51.6 mm**. the common modern flip coin is the 34 mm "large", the bigger authorized
-collectible is 38 mm, and 25 mm compact ones and 51 mm jumbos sit at the extremes. a 26.8 mm
-well took only the smallest of them, so for most people the coin simply would not go in.
+this was wrong for a long time. worth recording. the well was built around
+`coin_d = 26.0`, assumed, not looked up. official pokemon coins run 29.8-51.6 mm. the
+common modern flip coin is the 34 mm "large", the bigger authorized collectible is 38 mm,
+and 25 mm compact ones and 51 mm jumbos sit at the extremes. a 26.8 mm well took only the
+smallest of them, so for most people the coin wouldnt go in.
 
-it is now built for **`coin_d = 38.0`** - a ⌀38.8 mm well, which swallows every size below it:
+its now built for `coin_d = 38.0` - a ⌀38.8 mm well, which swallows every size below it:
 ```
 
 ## what changed
 
-six edits, all mechanical:
+nine edits. the first six are mechanical, the last three came out of the A/B round on
+2026-09-14 where he picked the variant he liked from three:
 
 | before | after | rule |
 |---|---|---|
@@ -41,16 +42,19 @@ six edits, all mechanical:
 | `— a ⌀38.8 mm well` (em dash) | `- a ⌀38.8 mm well` | the aside keeps its shape, with the spaced hyphen that is actually typed |
 | `"large"; the bigger ... 38 mm; 25 mm compact` | `"large", the bigger ... 38 mm, and 25 mm compact` | no semicolons, 0 in the corpus |
 | `authorised` | `authorized` | american spelling |
-| `The well`, `Official`, `It is now` | `the well`, `official`, `it is now` | lowercase running prose |
+| `The well`, `Official`, `It is now` | `the well`, `official`, `its now` | lowercase running prose |
 | `Pokémon` | `pokemon` | names lowercase, no accent, as typed. 5 of 5 in the corpus |
+| `**29.8–51.6 mm**`, `**`coin_d = 38.0`**`, bold opening sentence | plain | figures and everything else plain, no bold. A/B pick |
+| `would not go in`, `It is now built` | `wouldnt go in`, `its now built` | contractions as typed, no apostrophe. A/B pick |
+| `This was wrong for a long time and is worth recording.` and `a figure assumed rather than looked up` | `this was wrong for a long time. worth recording.` and `assumed, not looked up` | short sentences, fragments allowed. A/B pick |
 
 ## what did not change
 
-- **the hard numbers and their bold.** 29.8-51.6 mm, 34 mm, 38 mm, ⌀38.8 mm. the
-  skill never touches a figure.
-- **owning the mistake.** "this was wrong for a long time and is worth recording"
-  survives word for word. that sentence is the most miguel thing in the section and
-  a rewrite that softened it would have failed.
+- **the hard numbers.** 29.8-51.6 mm, 34 mm, 38 mm, ⌀38.8 mm. the skill never
+  touches a figure.
+- **owning the mistake.** "this was wrong for a long time" survives word for word, and
+  "worth recording" is still there, now as its own fragment. that is the most miguel
+  thing in the section and a rewrite that softened it would have failed.
 - **the code spans.** `coin_d = 26.0` and `coin_d = 38.0` are identifiers.
 - **no slips.** the section is 118 words. at one per 200-400 the planner places
   nothing here, which is the expected result for most individual sections.

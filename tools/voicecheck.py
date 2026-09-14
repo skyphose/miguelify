@@ -68,6 +68,22 @@ CHECKS = [
      "utilize, about not approximately, before not prior to."),
 ]
 
+CHECKS += [
+    # Decided from A/B samples on 2026-09-14: contractions as typed, no apostrophe;
+    # figures plain, not bold; short sentences, fragments allowed.
+    ("apostrophe", "med",
+     r"\b(?:don|doesn|didn|isn|aren|wasn|weren|can|won|wouldn|couldn|shouldn|hasn|haven|hadn)'t\b|"
+     r"\b(?:it|that|what|there|here|let)'s\b|\bi'(?:m|ve|ll|d)\b|\b(?:you|we|they)'(?:re|ve|ll|d)\b",
+     "apostrophe in a contraction: the corpus types dont, isnt, youre, lets. "
+     "{apostrophe} apostrophes in {messages} typed messages."),
+    ("uncontracted", "low",
+     r"\b(?:do not|does not|did not|is not|are not|was not|cannot|you are|i am|that is|there is|it is)\b",
+     "uncontracted form: contract it as typed, with no apostrophe. dont, isnt, youre, thats."),
+    ("boldnum", "low", r"\*\*[^*\n]*\d[^*\n]*\*\*",
+     "bold figure: numbers are plain, with spaced units. Chosen from A/B samples."),
+]
+LONG_SENTENCE = 30   # words. Chosen register is short sentences and fragments.
+
 # Capitalized forms of the vocabulary in jargon.txt: github, openscad, stl, mtg. The
 # corpus types them lowercase, so published prose does too. Checked outside CHECKS
 # because the word list is read from a file, not written into a regex here.
@@ -101,7 +117,7 @@ JARGON_RX = [re.compile(r"\b" + re.escape(w) + r"s?\b", re.I) for w in jargon_wo
 # Numbers quoted in the messages above. The shipped baseline is the fallback when
 # no profile has been generated yet; extract_voice_corpus.py overwrites them.
 BASELINE = {"messages": 90, "em_dash": 0, "emoji": 0, "british": 0, "bang": 2,
-            "jargon_lower": 20, "jargon_total": 22}
+            "jargon_lower": 20, "jargon_total": 22, "apostrophe": 0}
 
 
 def profile_fields():
@@ -110,8 +126,8 @@ def profile_fields():
         with open(PROFILE, encoding="utf-8") as fh:
             prof = json.load(fh)
         fields["messages"] = prof["messages"]
-        for k in ("em_dash", "emoji", "british", "bang"):
-            fields[k] = prof["counts"][k]
+        for k in ("em_dash", "emoji", "british", "bang", "apostrophe"):
+            fields[k] = prof["counts"].get(k, fields[k])
         if prof.get("casing", {}).get("total"):
             fields["jargon_lower"] = prof["casing"]["lowercase"]
             fields["jargon_total"] = prof["casing"]["total"]
@@ -123,24 +139,51 @@ def profile_fields():
 NOREPLY = re.compile(r"\S+@users\.noreply\.github\.com")
 
 
+def long_sentences(para_lines):
+    """Sentences over LONG_SENTENCE words in one paragraph, as (first line, count)."""
+    if not para_lines:
+        return 0
+    text = " ".join(INLINE_CODE.sub(" ", t) for _, t in para_lines)
+    return sum(1 for s in re.split(r"[.!?]+\s", text) if len(s.split()) > LONG_SENTENCE)
+
+
 def scan(lines):
     """Return {check_id: (severity, message, [line numbers], total hits)}."""
     found = {}
     in_fence = False
+    para = []   # (line number, text) of the paragraph being read
+
+    def flush():
+        n_long = long_sentences(para)
+        if n_long:
+            rec = found.setdefault("longsentence", ["low",
+                  f"sentence over {LONG_SENTENCE} words: the register is short sentences, "
+                  "fragments allowed. Chosen from A/B samples.", [], 0])
+            rec[2].append(para[0][0])
+            rec[3] += n_long
+        para.clear()
+
     for n, line in enumerate(lines, 1):
         if line.lstrip().startswith("```"):
             in_fence = not in_fence
+            flush()
             continue
-        if in_fence or EXEMPT.search(line):
+        if in_fence or EXEMPT.search(line) or not line.strip():
+            flush()
             continue
         prose = INLINE_CODE.sub(" ", line)   # a literal keeps its case and its dashes
+        is_heading = bool(HEADING.match(line))
+        if is_heading:
+            flush()               # a heading is not part of any paragraph
+        else:
+            para.append((n, prose))
         for cid, sev, pat, msg in CHECKS:
             hits = re.findall(pat, prose)
             if hits:
                 rec = found.setdefault(cid, [sev, msg, [], 0])
                 rec[2].append(n)
                 rec[3] += len(hits)
-        if not HEADING.match(line):
+        if not is_heading:
             caps = sum(1 for rx in JARGON_RX for m in rx.finditer(prose)
                        if m.group() != m.group().lower())
             if caps:
@@ -148,6 +191,7 @@ def scan(lines):
                 rec = found.setdefault(cid, [sev, msg, [], 0])
                 rec[2].append(n)
                 rec[3] += caps
+    flush()
     return found
 
 

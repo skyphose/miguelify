@@ -37,6 +37,31 @@ WORD = re.compile(r"[A-Za-z]+")
 
 JARGON = os.path.join(os.path.dirname(PROFILE), "jargon.txt")
 
+# Contractions with the apostrophe dropped, as the corpus author types them and, since
+# the A/B round of 2026-09-14, as published text keeps them. Never a slip site and
+# never a typo. The scraper imports this set.
+CONTRACTIONS = {
+    "youre", "theyre", "were", "dont", "doesnt", "didnt", "cant", "wont", "wouldnt",
+    "couldnt", "shouldnt", "isnt", "arent", "wasnt", "werent", "hasnt", "havent",
+    "hadnt", "thats", "whats", "theres", "heres", "wheres", "hes", "shes", "ive",
+    "youve", "weve", "theyve", "ill", "youll", "itll", "theyll", "youd", "hed",
+    "shed", "wed", "theyd", "lets", "aint", "its", "im",
+}
+
+
+def jargon_words():
+    """../references/jargon.txt as a set, one word per line, comments stripped."""
+    try:
+        with open(JARGON, encoding="utf-8") as fh:
+            return {ln.split("#", 1)[0].strip().lower() for ln in fh
+                    if ln.split("#", 1)[0].strip()}
+    except OSError:
+        return set()
+
+
+def is_jargon(word, jargon):
+    return word in jargon or (word.endswith("s") and word[:-1] in jargon)
+
 
 def load_dict():
     """The system word list plus ../references/jargon.txt, one word per line.
@@ -50,15 +75,7 @@ def load_dict():
     except OSError:
         print(f"warning: {DICT} not found, real-word filter disabled", file=sys.stderr)
         return set()
-    try:
-        with open(JARGON, encoding="utf-8") as fh:
-            for line in fh:
-                line = line.split("#", 1)[0].strip().lower()
-                if line:
-                    words.add(line)
-    except OSError:
-        pass
-    return words
+    return words | jargon_words()
 
 
 def prose_tokens(lines):
@@ -188,6 +205,13 @@ def main():
 
     real_words = load_dict()
     toks = prose_tokens(lines)
+    # A slip on jargon or a contraction reads as the wrong term, not as a slip, so a
+    # site has to be a dictionary word (jargon.txt counts) and not a contraction.
+    jargon = jargon_words()
+    if real_words:
+        toks = [(n, w, ctx, ok and w not in CONTRACTIONS and not is_jargon(w, jargon)
+                 and is_real(w, real_words))
+                for n, w, ctx, ok in toks]
     n_eligible = sum(1 for t in toks if t[3])
     if not n_eligible:
         print("no eligible prose found")

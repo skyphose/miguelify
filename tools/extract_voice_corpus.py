@@ -39,7 +39,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from voicecheck import leak_terms       # noqa: E402
-from slipplan import load_dict, is_real, JARGON  # noqa: E402
+from slipplan import load_dict, is_real, JARGON, CONTRACTIONS  # noqa: E402
 
 HOME = os.path.expanduser("~")
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,15 +62,6 @@ LETTERS = "abcdefghijklmnopqrstuvwxyz"
 CLASSES = ("swap", "double", "drop")
 MAX_REPEATS = 2   # a misspelling that recurs identically is a habit or jargon
 
-# Contractions with the apostrophe dropped. Chat shorthand, not motor errors, and
-# they are stripped from published text along with the lowercase openings.
-CONTRACTIONS = {
-    "youre", "theyre", "were", "dont", "doesnt", "didnt", "cant", "wont", "wouldnt",
-    "couldnt", "shouldnt", "isnt", "arent", "wasnt", "werent", "hasnt", "havent",
-    "hadnt", "thats", "whats", "theres", "heres", "wheres", "hes", "shes", "ive",
-    "youve", "weve", "theyve", "ill", "youll", "itll", "theyll", "youd", "hed",
-    "shed", "wed", "theyd", "lets", "aint",
-}
 
 
 def redact(text, terms):
@@ -142,6 +133,9 @@ def measure(typed):
         "question": n(r"\?"),
         "bang": n(r"!"),
         "british": n(r"\b(licence|colour|favour|centre|metre)\b"),
+        "apostrophe": n(r"[A-Za-z]'[A-Za-z]"),
+        "bare_contractions": len([w for w in re.findall(r"[a-z]+", blob.lower())
+                                  if w in CONTRACTIONS and w not in ("its", "were")]),   # those two are ambiguous
         "starts_upper": sum(1 for m in typed if m[:1].isupper()),
         "ends_period": sum(1 for m in typed if m.rstrip().endswith(".")),
     }
@@ -218,6 +212,8 @@ def report(typed, counts, total_words, found, previous):
         ("emoji", "emoji"), ("lets", "'lets'"), ("let_s", "'let's'"),
         ("can_we", "'can we'"), ("question", "question marks"),
         ("bang", "exclamation marks"), ("british", "British spellings"),
+        ("apostrophe", "apostrophes inside words"),
+        ("bare_contractions", "contractions with no apostrophe"),
     ]
     width = max(len(lbl) for _, lbl in labels) + 2
     print(f"\n{len(typed)} hand-typed messages (under {SHORT} chars), {total_words} words\n")

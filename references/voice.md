@@ -105,8 +105,9 @@ error that produces a non-word. That is why the skill permits typos at all: a no
 autocorrected by the eye at no cost, while a wrong word silently changes the sentence and
 forces a re-read.
 
-He does drop apostrophes (`dont`, `its`, `youre`), but that is chat shorthand rather than
-a typo, and it is stripped from published text along with the lowercase openings.
+He drops apostrophes (`dont`, `its`, `youre`): 48 bare contractions against 2
+apostrophes in the corpus. Not a typo, and since the A/B round of 2026-09-14 it is kept
+in published text.
 
 **Published rate is deliberately not his natural rate.** 1 per 49 would put ~40 slips in
 a 2,000-word README, which reads as a broken document. The skill uses 1 per 200-400, about
@@ -127,15 +128,37 @@ fallback when no profile exists) rather than listing every transposition first. 
 showed swaps at the top of every site, which would have quietly produced
 transposition-only documents.
 
+## A/B round 1 (2026-09-14)
+
+Four questions, three variants each, built from real sentences in the dice-insert README
+and listing. Option A was always the current rule. He picked:
+
+| Question | Pick | What backs it |
+|---|---|---|
+| Contractions | **C**, as typed with no apostrophe: youre, isnt, dont | 48 bare contractions, 2 apostrophes (both "it's") |
+| Asides | **A**, spaced hyphen, unchanged | 25 uses, still reads right in lowercase |
+| Register | **C**, terse, fragments allowed, over plain declaratives (A) and chat softeners (B) | median sentence 11.5 words, mean 13.2, 90th pct 25, max 40; 21 of 106 are 5 words or fewer |
+| Numbers | **B**, plain with spaced units, over bold (A) and "67x91x18.6mm" (C) | 0 bold markers in 1,398 typed words |
+
+Rejected on purpose: natural contractions with apostrophes, parentheses and sentence
+splits for asides, the chat register ("honestly", "basically"), and the chat number form
+with no space before the unit.
+
+What changed because of it: `voicecheck.py` gained apostrophe, uncontracted, boldnum and
+longsentence checks; `slipplan.py` refuses a contraction or a non-dictionary word as a
+slip site; the scraper counts apostrophes and bare contractions into `profile.json`;
+`examples/coin-well.md` now shows the picked variants.
+
 ## Chat-only, do not publish
 
-Absent terminal periods (101 of 103), "lets" for "let's" (39 : 0), and dropped
-apostrophes ("dont", "youre"). These are keyboard speed, not style, and they are
-restored when text goes public.
+Absent terminal periods (101 of 103). That is keyboard speed, and full stops come back
+when text goes public. The chat softeners ("honestly", "basically", "just") stay in chat
+too, by the A/B round below.
 
-Two things that look like keyboard speed are not, by his explicit decision: lowercase
-(2026-09-04, "no caps normally", extended to names and acronyms on 2026-09-14) and
-typos (kept at 1 per 200-400 words, see SKILL.md). Both carry over.
+Everything else that looks like keyboard speed carries over, by his explicit decision:
+lowercase (2026-09-04, "no caps normally", extended to names and acronyms 2026-09-14),
+typos (1 per 200-400 words, SKILL.md), and contractions with no apostrophe, "lets"
+included (A/B round 1, 2026-09-14).
 
 The `*` correction convention ("* text histoy", "*back to the non-reversible version")
 is chat-only too, but it is worth reading as intent: he corrects tersely and expects the

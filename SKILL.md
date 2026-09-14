@@ -74,9 +74,11 @@ sentence about why the category matters. The dice-insert README opens on the pro
 in one line and then names the object: "A 100+ capacity deck box is far deeper than
 the deck you keep in it. This is a slab that fills the gap."
 
-**Numbers, with units, in bold.** He does not write "compact" or "a good fit". He
-writes **67 x 91 x 18.6 mm** and **48.9 mm**. Every claim about size, speed, count or
-tolerance gets its actual figure. If there is no figure, say there is no figure.
+**Numbers, with units, plain.** He does not write "compact" or "a good fit". He writes
+67 x 91 x 18.6 mm and 48.9 mm, spaced units, no bold. Every claim about size, speed,
+count or tolerance gets its actual figure. If there is no figure, say there is no figure.
+No bold on figures was chosen from A/B samples on 2026-09-14, and there is not one bold
+marker in 1,398 words of his typing. Emphasis, when it is needed, is caps on one word.
 
 **Hand the reader a test they can run.** "Measure the inside of your box and compare."
 "A downloader can check it in ten seconds with calipers." Preferred over any assurance
@@ -103,9 +105,12 @@ in front of your deck", "how it works". Never Title Case. Sentence case is what 
 earlier dice-insert README shipped with and is tolerable in a file that already has it.
 New headings are lowercase like everything else.
 
-**Rhythm.** Mostly short declaratives. One longer explanatory sentence, with a
-semicolon or a colon, when a trade-off genuinely needs unpacking. Tables for anything
-with variants or specs.
+**Rhythm.** Short. Fragments are fine: "worth recording." "assumed, not looked up." His
+median typed sentence is 11 words, and a fifth of them are 5 words or fewer. One longer
+sentence, with a colon, only when a trade-off genuinely needs unpacking, and never past
+30 words. Chosen from A/B samples on 2026-09-14 over plain declaratives and over his chat
+register ("honestly", "basically", "just"), which he did not want carried over. Tables for
+anything with variants or specs.
 
 **Lowercase, all of it.** He starts 101 of 103 messages lowercase and it is his normal
 register. Names and acronyms are lowercase too: github, makerworld, pokemon (no accent),
@@ -126,6 +131,14 @@ Two things keep their case, and neither is a style choice:
 
 A licence identifier in a licence *field* (CC BY-NC-SA 4.0) is a literal. The same words
 in a sentence are not.
+
+**Contractions as typed, no apostrophe.** dont, isnt, youre, thats, lets, im, ive. The
+corpus has 48 bare contractions and 2 apostrophes, both "it's". Chosen 2026-09-14 from
+A/B samples over natural contractions ("you're") and over no contractions at all, which
+is what the rules had been producing and which reads formal in its own way. "its" serves
+for both "it is" and the possessive, as it does in his typing. Other possessives keep the
+apostrophe (the box's depth): the sample he chose kept it, and a dropped one reads as a
+typo rather than a habit.
 
 ## His words
 
@@ -207,7 +220,9 @@ joke, and a joke reads as intentional, which is the opposite of the point. Rejec
 site and take a neighboring word.
 
 **Never-slip zones.** Code fences, inline code, identifiers, numbers and units, the fit
-spec, commands, paths, URLs, tags, licence names, headings.
+spec, commands, paths, URLs, tags, licence names, headings. Also contractions and jargon:
+a slip on "dont" or "openscad" reads as the wrong word, not as a slip, and the planner
+refuses those sites.
 
 **Do not add a spellchecker** or a CI spell job to these repos. It would mechanically
 undo all of this.
@@ -234,20 +249,22 @@ Cut on sight. These are the tells that mark text as machine-written.
 
 ## What NOT to carry over from his chat register
 
-His typed messages skip terminal periods (101 of 103) and use "lets" (39 uses, never
-"let's"). Those two are chat shorthand: **published prose keeps its full stops and
-spells out "let's"**, or avoids the contraction entirely.
+His typed messages skip terminal periods (101 of 103). That one is keyboard speed:
+**published prose keeps its full stops.** A fragment still ends with one.
 
-Two other habits are **not** shorthand and do carry over, both by his explicit choice:
+Everything else that looks like shorthand carries over, each by his explicit choice:
 
-- **Lowercase** running prose. See "Lowercase in running prose" above.
-- **Typos**, deliberately placed. See "Deliberate slips" above.
+- **Lowercase**, names and acronyms included. See "Lowercase, all of it".
+- **Contractions with no apostrophe**, "lets" included. See "Contractions as typed".
+- **Typos**, deliberately placed. See "Deliberate slips".
+- **Emphatic caps on a single word** ("a LITTLE more aggressive", "taken from the SLEEVE
+  rather than the box").
+- A willingness to say a thing is uncertain rather than smoothing it over.
 
-Keep the directness. Drop only the missing periods and "lets".
+What does not carry over, by the same A/B round: the chat softeners. "honestly",
+"basically", "just", "a bit". Plain and short instead.
 
-Two things from chat *do* carry over, sparingly: emphatic caps on a single word for
-intensity ("a LITTLE more aggressive", "taken from the SLEEVE rather than the box"), and
-a willingness to say a thing is uncertain rather than smoothing it over.
+Keep the directness. Add only the periods.
 
 ## Per-surface rules
 
