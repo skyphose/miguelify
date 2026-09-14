@@ -149,6 +149,20 @@ longsentence checks; `slipplan.py` refuses a contraction or a non-dictionary wor
 slip site; the scraper counts apostrophes and bare contractions into `profile.json`;
 `examples/coin-well.md` now shows the picked variants.
 
+## A/B round 2 (2026-09-14)
+
+Four more questions on the same footing. Every pick was the current rule, which turns
+four judgment calls into his choices:
+
+| Question | Pick | Rejected |
+|---|---|---|
+| Emphasis | **A**, caps on one word ("the SLEEVE") | bold; no emphasis, rephrase instead |
+| Structure for variants and specs | **C**, a table | prose; bullets |
+| Slip density | **A**, 1 per 200-400 | 1 per 100-200; his natural 1 per 50 |
+| Section openers | **A**, the thing itself, spec first | the test first; the reader's situation first |
+
+Nothing in the tools changed. SKILL.md marks those four rules as A/B-confirmed.
+
 ## Chat-only, do not publish
 
 Absent terminal periods (101 of 103). That is keyboard speed, and full stops come back

@@ -69,7 +69,8 @@ These are absolutes. They were counted, and the count was zero or near it.
 
 ## The voice
 
-**Open with the thing itself.** No throat-clearing, no "Introducing", no framing
+**Open with the thing itself.** Confirmed by A/B on 2026-09-14 over test-first and
+reader-first openers. No throat-clearing, no "Introducing", no framing
 sentence about why the category matters. The dice-insert README opens on the problem
 in one line and then names the object: "A 100+ capacity deck box is far deeper than
 the deck you keep in it. This is a slab that fills the gap."
@@ -110,7 +111,7 @@ median typed sentence is 11 words, and a fifth of them are 5 words or fewer. One
 sentence, with a colon, only when a trade-off genuinely needs unpacking, and never past
 30 words. Chosen from A/B samples on 2026-09-14 over plain declaratives and over his chat
 register ("honestly", "basically", "just"), which he did not want carried over. Tables for
-anything with variants or specs.
+anything with variants or specs, confirmed by A/B on 2026-09-14 over prose and bullets.
 
 **Lowercase, all of it.** He starts 101 of 103 messages lowercase and it is his normal
 register. Names and acronyms are lowercase too: github, makerworld, pokemon (no accent),
@@ -187,7 +188,8 @@ governing test is narrow:
 Everything below follows from that one test.
 
 **Rate.** One slip per 200-400 words, with each gap drawn at random rather than on a
-fixed stride. A 2,000-word README gets roughly 5 to 10. His natural typing rate is 1 per
+fixed stride. Confirmed by A/B on 2026-09-14 over 1 per 100-200 and over his natural
+rate. A 2,000-word README gets roughly 5 to 10. His natural typing rate is 1 per
 49 words by hand count and 1 per 74 by the scraper's stricter automatic count. Published
 text is deliberately four to six times sparser than that.
 
@@ -258,7 +260,7 @@ Everything else that looks like shorthand carries over, each by his explicit cho
 - **Contractions with no apostrophe**, "lets" included. See "Contractions as typed".
 - **Typos**, deliberately placed. See "Deliberate slips".
 - **Emphatic caps on a single word** ("a LITTLE more aggressive", "taken from the SLEEVE
-  rather than the box").
+  rather than the box"). Confirmed by A/B on 2026-09-14 over bold and over no emphasis.
 - A willingness to say a thing is uncertain rather than smoothing it over.
 
 What does not carry over, by the same A/B round: the chat softeners. "honestly",
