@@ -151,15 +151,15 @@ the machinery is the reusable part and the rules arent. in order:
 a project im working on, not a finished thing. as of 2026-09-14:
 
 - **works.** the scrape with drift check, the linter with leak checking of files and git
-  metadata, the slip planner with profile-driven class weights. A/B rounds to settle the
-  rules the counts cant. two of my own documents have been through the full pass: a
-  model listing and this readme.
+  metadata, the slip planner with profile-driven class weights. three A/B rounds to
+  settle the rules the counts cant: 12 questions, 6 rule changes, 6 confirmations. two
+  of my own documents have been through the full pass: a model listing and this readme.
 - **rough.** the typo inventory misses substitutions and two-edit slips, so it counts
   about a third fewer than a hand pass. the rewrite step has no tool behind it. its the
   skill's rules applied by reading, and im not convinced it should be automated.
-- **next.** more A/B rounds: bold for emphasis, lists against prose, how dense the slips
-  should be. run it over the dice-insert readme, which has 72 findings waiting. add a
-  second corpus source, the commit messages i typed myself. write tests for the tools.
+- **next.** run the dice-insert readme and listing through the current rules. the
+  readme has 72 findings waiting and the listing was written before rounds 1 and 3. add
+  a second corpus source, the commit messages i typed myself. write tests for the tools.
 
 ## private overlay
 

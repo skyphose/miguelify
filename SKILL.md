@@ -86,14 +86,19 @@ marker in 1,398 words of his typing. Emphasis, when it is needed, is caps on one
 that it will work.
 
 **Say who it is not for, and what it costs.** This is the most distinctive thing in his
-published writing. "Be clear-eyed about the trade: you are giving up roughly a quarter
-of the box's depth." "If you routinely fill a deck box to the brim, this is not for
-you." Never ship public copy that only lists upsides.
+published writing. The cost as a number, then the exclusion, with no lead-in phrase:
+"the slab takes 18.6 mm of the 67.5 mm interior, about a quarter. if you fill a deck box
+to the brim, this isnt for you." Chosen by A/B on 2026-09-14; the shipped listing's "be
+clear-eyed about the trade" was rejected as framing. Never ship public copy that only
+lists upsides.
 
-**Never overclaim, and say so out loud when a claim is unearned.** LISTING.md carries a
-standing "Note on claims" explaining that it does *not* say the insert was tested in a
-range of boxes, because it was not. README says "Neither has been printed at these
-dimensions." When in doubt, downgrade the claim and state the gap in the text itself.
+**Never overclaim, and say so out loud when a claim is unearned.** Blunt, first person,
+one line, where it applies: "untested at this size. i printed v1.0 at 66 x 88, not this
+one. measure first." Chosen by A/B on 2026-09-14 over the third-person inline form
+("neither has been printed at these dimensions") and over the standing "note on claims"
+section the shipped LISTING.md carries. Say what was done, what was not, and the test
+the reader can run. When in doubt, downgrade the claim and state the gap in the text
+itself.
 
 **Own the mistakes plainly.** On his own earlier naming scheme: "it was always slightly
 a lie - nothing in either is game-specific, and people picked the wrong one." No
@@ -281,9 +286,10 @@ See `references/surfaces.md` for the full set. The short version:
   generated-with footer.
 - **README:** fit spec / requirements up top, honest limits before features, a table for
   variants, and a section saying what it does not do.
-- **Model listings:** title says what it is and its one differentiator. Lead the
-  description with the problem. State the measurable spec as a blockquote. Include the
-  trade-off paragraph.
+- **Model listings:** title says what it is and its one differentiator. Summary line
+  spec first. Description opens on the problem. The measurable spec as a blockquote.
+  The trade-off as a number, then who it is not for. What was not tested, blunt and
+  first person. Three of those were picked from A/B samples on 2026-09-14.
 
 ## Workflow
 

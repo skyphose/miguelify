@@ -163,6 +163,24 @@ four judgment calls into his choices:
 
 Nothing in the tools changed. SKILL.md marks those four rules as A/B-confirmed.
 
+## A/B round 3 (2026-09-14), the listing surface
+
+Off the README-shaped questions, where rounds 1 and 2 had converged, and onto the
+words a Printables visitor reads first.
+
+| Question | Pick | Rejected |
+|---|---|---|
+| Listing title | **A**, what it is plus the one differentiator, unchanged | object plus a number; the problem first |
+| Summary line | **C**, spec first: dimensions, variants, what is included | a concrete one-liner (the old rule); problem then object |
+| Trade-off | **B**, the cost as a number, then who it is not for, no lead-in | "be clear-eyed about the trade" (the shipped form); exclusion first |
+| Not tested | **B**, blunt, first person, one line | inline third person (the shipped README form); a standing "note on claims" section (the shipped LISTING form) |
+
+Two of the rejected forms are what he actually shipped, which is the point of the
+exercise: the shipped text was assistant-drafted and approved, and given the choice he
+picks something shorter and more direct every time.
+
+Across the three rounds: 12 questions, 6 rule changes, 6 confirmations.
+
 ## Chat-only, do not publish
 
 Absent terminal periods (101 of 103). That is keyboard speed, and full stops come back

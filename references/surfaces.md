@@ -51,14 +51,25 @@ Order that matches his shipped README:
 
 - **Title**: what it is, plus the single differentiator, lowercase like everything else:
   "universal dice insert for top-opening deck boxes - with or without a coin well".
-  Search on every model site is case-insensitive, so caps buy nothing there.
-- **Summary**: one or two lines, concrete. What it does, how many variants, whether the
-  source is parametric.
+  Search on every model site is case-insensitive, so caps buy nothing there. Confirmed
+  by A/B on 2026-09-14 over object-plus-a-number and over problem-first.
+- **Summary**: spec first. The dimensions, then the variants, then what is included:
+  "67 x 91 x 18.6 mm dice tray for top-opening deck boxes. two variants, coin well or
+  not. openscad source included." Chosen by A/B on 2026-09-14 over a concrete one-liner
+  and over problem-then-object. A reader who cannot fit it should find out in the first
+  five words.
 - **Description** opens on the problem in the reader's own terms, then names the object.
 - A blockquote with the hard numbers, so it is skimmable.
 - A "will it fit / will it work for me" section that gives the reader a measurement to
   take themselves.
-- An explicit trade-off paragraph.
+- The trade-off as a number, then who it is not for, with no lead-in phrase: "the slab
+  takes 18.6 mm of the 67.5 mm interior, about a quarter. if you fill a deck box to the
+  brim, this isnt for you." Chosen by A/B on 2026-09-14. "be clear-eyed about the
+  trade", which the shipped listing opens with, was rejected.
+- What was not done, blunt and first person, one line where it applies: "untested at
+  this size. i printed v1.0 at 66 x 88, not this one. measure first." Chosen by A/B on
+  2026-09-14 over an inline third-person sentence and over a standing "note on claims"
+  section. The note-on-claims form in the shipped LISTING.md is the older approach.
 - Tags lowercase, unquoted, generous. Use his words: "deck box", "dice", "mtg", "tcg",
   not "trading card game accessory".
 - Licence field: CC BY-NC-SA 4.0 has been his default on models. Confirm, do not assume.
