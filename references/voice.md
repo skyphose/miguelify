@@ -9,8 +9,7 @@ ones were assistant-authored prompts and compaction summaries, and were discarde
 Rebuild with `tools/extract_voice_corpus.py`.
 
 **Corpus B - what he ships.** `boulder-dice-insert/README.md` and `LISTING.md`, plus
-`git log` across `ai-scad-lab`, `boulder-dice-insert`, `obsidian-bridge` and one private
-dashboard repo. This is text an assistant drafted and he then corrected, cut and approved,
+`git log` across `boulder-dice-insert` and three repos that are not public. This is text an assistant drafted and he then corrected, cut and approved,
 so it shows his editorial judgment rather than his keystrokes.
 
 Rules that hold in **both** corpora are load-bearing. Rules that appear only in B are

@@ -1,21 +1,30 @@
 #!/usr/bin/env python3
-"""Flag mechanical assistant-tells in public-facing text.
+"""Flag mechanical assistant-tells in public-facing text, and private-string leaks.
 
 Usage:  voicecheck.py FILE [FILE...]
+        voicecheck.py --tracked        every file git tracks in the current repo
+        voicecheck.py --git            author, committer and message of every commit
+                                       on the current branch
         git diff --cached --name-only | xargs voicecheck.py
 
-If ../references/private.md exists it is also used as a leak list: every backticked
-string in it is grepped for, in every file, including this skill's own. That check
-runs first and is reported separately, because a leak is a publish-blocker and a
-hype word is not.
+The flags combine. `voicecheck.py --tracked --git` is the pre-push check.
 
 Regex only. It catches the tells that can be counted and nothing else. A clean
 run is a floor, not a passing grade -- the judgment calls (honest claims, the
 who-it-is-not-for paragraph, cutting a restating conclusion) still need a human
 or a careful read. See ../SKILL.md.
+
+If ../references/private.md exists it is also a leak list: every backticked string
+under its "## Leak list" heading is grepped for in every file, including this
+skill's own, and in commit metadata under --git. Leaks are reported separately and
+set the exit status to 2, because a leak is a publish-blocker and a hype word is
+not. The check refuses to run at all if private.md has itself been committed.
+
+Exit: 0 clean, 1 voice findings, 2 leak or a committed private.md.
 """
 import os
 import re
+import subprocess
 import sys
 
 HYPE = (r"delve|leverage|robust|seamless|elevate|unlock|harness|empower|streamline|"
@@ -57,6 +66,12 @@ CHECKS = [
 # Lines where a tell is being quoted as evidence rather than used.
 EXEMPT = re.compile(r"^\s*(>|\|)|zero (em dash|in )|never typed")
 
+SELF_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PRIVATE = os.path.join(SELF_DIR, "references", "private.md")
+
+# A GitHub noreply address is the public login by construction, never a leak.
+NOREPLY = re.compile(r"\S+@users\.noreply\.github\.com")
+
 
 def scan(lines):
     """Return {check_id: (severity, message, [line numbers], total hits)}."""
@@ -77,22 +92,12 @@ def scan(lines):
     return found
 
 
-def fmt_lines(nums, cap=8):
-    shown = ", ".join(str(n) for n in nums[:cap])
-    return shown + (f" (+{len(nums) - cap} more)" if len(nums) > cap else "")
-
-
-SELF_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PRIVATE = os.path.join(SELF_DIR, "references", "private.md")
-
-
 def leak_terms():
     """Backticked strings under '## Leak list' in the untracked private overlay.
 
     Word-boundaried, so a 3-letter acronym does not match inside an ordinary word.
     Case-sensitive when the term carries any uppercase, since the short all-caps ones
-    are the false-positive risk.
-    A '.x' octet is treated as a range, not a literal.
+    are the false-positive risk. A '.x' octet is treated as a range, not a literal.
     """
     try:
         with open(PRIVATE, encoding="utf-8") as fh:
@@ -104,6 +109,8 @@ def leak_terms():
         return []
     terms = []
     for raw in sorted(set(re.findall(r"`([^`\n]{3,})`", m.group(1)))):
+        if raw.startswith("<") and raw.endswith(">"):
+            continue  # an unfilled template placeholder
         pat = re.escape(raw).replace(r"\.x", r"\.\d{1,3}")
         if raw[:1].isalnum():
             pat = r"\b" + pat
@@ -117,18 +124,94 @@ def leak_terms():
 def scan_leaks(lines, terms):
     hits = {}
     for n, line in enumerate(lines, 1):
+        line = NOREPLY.sub("", line)
         for raw, rx in terms:
             if rx.search(line):
                 hits.setdefault(raw, []).append(n)
     return hits
 
 
-def main(paths):
+def private_is_tracked():
+    r = subprocess.run(["git", "-C", SELF_DIR, "ls-files", "--error-unmatch",
+                        "references/private.md"], capture_output=True)
+    return r.returncode == 0
+
+
+def tracked_files():
+    r = subprocess.run(["git", "ls-files", "-z"], capture_output=True, text=True)
+    if r.returncode:
+        print("--tracked: not inside a git repository", file=sys.stderr)
+        return []
+    return [p for p in r.stdout.split("\0") if p]
+
+
+def git_metadata():
+    """(label, lines) for every commit on the current branch: identities plus message."""
+    fmt = "%H%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x1e"
+    r = subprocess.run(["git", "log", f"--format={fmt}"], capture_output=True, text=True)
+    if r.returncode:
+        print("--git: not inside a git repository", file=sys.stderr)
+        return []
+    recs = []
+    for rec in r.stdout.split("\x1e"):
+        rec = rec.strip("\n")
+        if not rec:
+            continue
+        h, an, ae, cn, ce, body = rec.split("\x00", 5)
+        lines = [f"author {an} <{ae}>", f"committer {cn} <{ce}>"] + body.splitlines()
+        recs.append((f"commit {h[:7]}", lines))
+    return recs
+
+
+def fmt_lines(nums, cap=8):
+    shown = ", ".join(str(n) for n in nums[:cap])
+    return shown + (f" (+{len(nums) - cap} more)" if len(nums) > cap else "")
+
+
+def report_leaks(label, lk):
+    print(f"\n{label}  LEAK - do not publish")
+    for raw, nums in sorted(lk.items()):
+        print(f"  high leak      {len(nums):>3}x  private string {raw!r}")
+        print(f"       {'':<9}      lines {fmt_lines(nums)}")
+    return sum(len(v) for v in lk.values())
+
+
+def is_binary(path):
+    try:
+        with open(path, "rb") as fh:
+            return b"\0" in fh.read(8192)
+    except OSError:
+        return False
+
+
+def main(argv):
+    flags = {a for a in argv if a.startswith("--")}
+    paths = [a for a in argv if not a.startswith("--")]
+    unknown = flags - {"--tracked", "--git"}
+    if unknown:
+        print(f"unknown flag(s): {' '.join(sorted(unknown))}\n")
+        print(__doc__)
+        return 2
+    if "--tracked" in flags:
+        paths += tracked_files()
+    if not paths and "--git" not in flags:
+        print(__doc__)
+        return 2
+
+    if private_is_tracked():
+        print("references/private.md is committed in this skill's repo. That file is the")
+        print("leak list itself. Remove it from git before doing anything else:")
+        print("    git rm --cached references/private.md")
+        return 2
+
     order = {"high": 0, "med": 1, "low": 2}
     grand = 0
     terms = leak_terms()
     leaked = 0
     for path in paths:
+        if is_binary(path):
+            print(f"{path}: skipped, binary")
+            continue
         try:
             with open(path, encoding="utf-8", errors="replace") as fh:
                 lines = fh.read().splitlines()
@@ -139,11 +222,7 @@ def main(paths):
         if terms:
             lk = scan_leaks(lines, terms)
             if lk:
-                leaked += sum(len(v) for v in lk.values())
-                print(f"\n{path}  LEAK - do not publish")
-                for raw, nums in sorted(lk.items()):
-                    print(f"  high leak      {len(nums):>3}x  private string {raw!r}")
-                    print(f"       {'':<9}      lines {fmt_lines(nums)}")
+                leaked += report_leaks(path, lk)
 
         # The rulebook quotes the tells it bans, so it exempts itself. README.md is
         # ordinary public copy that happens to live here, so it does not.
@@ -167,6 +246,19 @@ def main(paths):
             print(f"  {sev:<4} {cid:<9} {count:>3}x  {msg}")
             print(f"       {'':<9}      lines {fmt_lines(nums)}")
 
+    if "--git" in flags:
+        commits = git_metadata()
+        if not terms:
+            print(f"--git: {len(commits)} commit(s), but no leak list to check them against")
+        else:
+            bad = 0
+            for label, lines in commits:
+                lk = scan_leaks(lines, terms)
+                if lk:
+                    leaked += report_leaks(label, lk)
+                    bad += 1
+            print(f"--git: {len(commits)} commit(s) checked, {bad} with a private string")
+
     print(f"\n{grand} hit(s) across {len(paths)} file(s).")
     if leaked:
         print(f"{leaked} private-string leak(s). Fix these before anything is pushed.")
@@ -178,7 +270,4 @@ def main(paths):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(__doc__)
-        sys.exit(2)
     sys.exit(main(sys.argv[1:]))

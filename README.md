@@ -73,8 +73,9 @@ the tools can also be run directly:
 | tool | what it does |
 |---|---|
 | `tools/voicecheck.py FILE...` | regex linter. flags em dashes, emoji, hype words, attribution, british spelling. exit 1 on findings, exit 2 on a private-string leak |
+| `tools/voicecheck.py --tracked --git` | the pre-push check. every file git tracks, plus the author, committer and message of every commit on the branch |
 | `tools/slipplan.py FILE` | proposes typo positions and candidates, refusing any that make a real word |
-| `tools/extract_voice_corpus.py` | rebuilds the corpus from your own claude code transcripts and prints the style counts |
+| `tools/extract_voice_corpus.py` | rebuilds the corpus from your own claude code transcripts and prints the style counts. redacts emails, home paths, tokens and the leak list, and refuses to write anywhere git would pick it up |
 
 the linter is a floor, not a passing grade. it catches what can be counted. the judgment
 calls, donwgrading an unearned claim or cutting a conclusion that just restates the
@@ -99,11 +100,15 @@ my own drafts before they go public, for my own reading experience.
 `references/private.md` is gitignored. it holds the strings that must never appear in a
 public repo: home paths, internal hostnames, vpn ranges, affiliations, job-search files.
 `voicecheck.py` reads it and greps every file for those strings, exiting 2 if it finds
-one. if the file is absent the rest of the linter still works and the leak check just has
-nothing to look for.
+one. with `--git` it also reads the author email and message of every commit on the
+branch, because that is where the first real leak in this repo turned up: a commit
+authored as `user@hostname.local` from a machine with no git email configured. if the
+file is absent the rest of the linter still works and the leak check just has nothing to
+look for. if the file is ever committed the linter refuses to run at all.
 
-there is a template at the top of that file in my own cehckout. if you fork this, write
-your own.
+`references/private.example.md` is the tracked template. copy it to `private.md` and
+fill in your own. leave the placeholders and they are ignored, so an unfilled cehckout
+does not flag anything.
 
 ## license
 

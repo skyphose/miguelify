@@ -227,11 +227,15 @@ See `references/surfaces.md` for the full set. The short version:
 4b. Only once the rewrite is settled, run
    `python3 ~/.claude/skills/miguelify/tools/slipplan.py <file>` and place the slips
    by hand. Slips go in **last**, so they are not quietly corrected during the rewrite.
-5. Re-run the linter one last time on everything about to ship, including files this
-   skill did not touch. Exit 2 means a private string is still in there.
+5. Before anything is pushed, run the linter over the whole repo and its history:
+   `python3 ~/.claude/skills/miguelify/tools/voicecheck.py --tracked --git`
+   That covers every tracked file plus the author email and message of every commit.
+   Exit 2 means a private string is still in there, in a file or in git metadata.
 6. **Show him the diff before anything is pushed, uploaded or published.** Rewriting his
    public words is his call to approve, every time. Never push, never publish, never
    post as part of this skill.
 
 If the corpus should be rebuilt after he has written more:
 `python3 ~/.claude/skills/miguelify/tools/extract_voice_corpus.py`
+It writes to `references/voice_corpus.txt`, which is gitignored, and redacts the leak
+list on the way out. It refuses any other target that git would pick up.
