@@ -22,6 +22,7 @@ not. The check refuses to run at all if private.md has itself been committed.
 
 Exit: 0 clean, 1 voice findings, 2 leak or a committed private.md.
 """
+import json
 import os
 import re
 import subprocess
@@ -35,13 +36,13 @@ HYPE = (r"delve|leverage|robust|seamless|elevate|unlock|harness|empower|streamli
 CHECKS = [
     # (id, severity, regex, message)
     ("emdash",   "high", r"[—–]",
-     "em/en dash: he types a spaced hyphen ' - '. Zero em dashes in 90 typed messages."),
+     "em/en dash: {em_dash} in {messages} typed messages. The measured form is a spaced hyphen ' - '."),
     ("emoji",    "high", r"[\U0001F300-\U0001FAFF\U00002600-\U000027BF️]",
-     "emoji: zero in everything he has written or shipped."),
+     "emoji: {emoji} in {messages} typed messages, none in anything shipped."),
     ("claude",   "high", r"Co-Authored-By:\s*Claude|Claude-Session:|Generated with \[?Claude",
-     "Claude attribution: never on his public repos. Standing preference."),
+     "Claude attribution: never in public repos. Standing preference."),
     ("british",  "med",  r"\b(licence|colour|favour|centre|metre|millimetre|organis\w+|analyse)\b",
-     "British spelling: he writes American forms."),
+     "British spelling: {british} in {messages} typed messages. The corpus is American."),
     ("hype",     "med",  HYPE,
      "hype word with no number behind it."),
     ("notjust",  "med",  r"[Ii]t'?s not just .{1,40}?,? it'?s|[Mm]ore than just ",
@@ -54,11 +55,11 @@ CHECKS = [
     ("intro",    "med",  r"^#{0,3}\s*Introducing\b",
      "'Introducing' opener: name the thing instead."),
     ("titlecase","low",  r"^#{1,6} (?:[A-Z][a-z]+ ){2,}[A-Z][a-z]+\s*$",
-     "Title Case heading: he uses sentence case."),
+     "Title Case heading: shipped docs use sentence case."),
     ("arrow",    "low",  r"→",
-     "Unicode arrow: his commits and docs use ASCII '->'."),
+     "Unicode arrow: shipped commits and docs use ASCII '->'."),
     ("bang",     "low",  r"!(?!\[|=|\]|\))",
-     "exclamation mark: 2 in 90 messages. Almost always cut."),
+     "exclamation mark: {bang} in {messages} typed messages. Almost always cut."),
     ("labelbul", "low",  r"^\s*[-*] \*\*[A-Z][^*]{1,30}:\*\*",
      "bolded-label bullet: fine occasionally, not as the house format."),
 ]
@@ -68,6 +69,24 @@ EXEMPT = re.compile(r"^\s*(>|\|)|zero (em dash|in )|never typed")
 
 SELF_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRIVATE = os.path.join(SELF_DIR, "references", "private.md")
+PROFILE = os.path.join(SELF_DIR, "references", "profile.json")
+
+# Numbers quoted in the messages above. The shipped baseline is the fallback when
+# no profile has been generated yet; extract_voice_corpus.py overwrites them.
+BASELINE = {"messages": 90, "em_dash": 0, "emoji": 0, "british": 0, "bang": 2}
+
+
+def profile_fields():
+    fields = dict(BASELINE)
+    try:
+        with open(PROFILE, encoding="utf-8") as fh:
+            prof = json.load(fh)
+        fields["messages"] = prof["messages"]
+        for k in ("em_dash", "emoji", "british", "bang"):
+            fields[k] = prof["counts"][k]
+    except (OSError, ValueError, KeyError):
+        pass
+    return fields
 
 # A GitHub noreply address is the public login by construction, never a leak.
 NOREPLY = re.compile(r"\S+@users\.noreply\.github\.com")
@@ -206,6 +225,7 @@ def main(argv):
 
     order = {"high": 0, "med": 1, "low": 2}
     grand = 0
+    fields = profile_fields()
     terms = leak_terms()
     leaked = 0
     for path in paths:
@@ -243,7 +263,7 @@ def main(argv):
         print(f"\n{path}  ({total} hit(s))")
         for cid, (sev, msg, nums, count) in sorted(
                 found.items(), key=lambda kv: (order[kv[1][0]], -kv[1][3])):
-            print(f"  {sev:<4} {cid:<9} {count:>3}x  {msg}")
+            print(f"  {sev:<4} {cid:<9} {count:>3}x  {msg.format(**fields)}")
             print(f"       {'':<9}      lines {fmt_lines(nums)}")
 
     if "--git" in flags:

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Rebuild the voice corpus from Miguel's own typed messages.
+"""Rebuild the voice corpus from your own typed messages, and the profile the tools read.
 
 Usage:  extract_voice_corpus.py [OUT] [--force]
         default OUT: ../references/voice_corpus.txt, which .gitignore excludes
 
 Pulls user-authored messages out of ~/.claude/projects/**/*.jsonl and drops the
-things that are not his typing: tool results, hook and system-reminder noise,
+things that are not typing: tool results, hook and system-reminder noise,
 compaction summaries, and the long assistant-written prompts that get replayed
-as user turns. Then prints the style counts the skill's rules are built on.
+as user turns. Then measures the style counts the rules are built on and writes
+them to ../references/profile.json, which voicecheck.py and slipplan.py read.
 
 The corpus is raw chat, so two things guard it. Emails, home paths, token-shaped
 strings and every term in ../references/private.md are redacted before anything is
@@ -15,8 +16,18 @@ written. And the tool refuses to write into a git working tree unless the target
 path is gitignored there, because a transcript dump landing in a project directory
 is exactly how it would end up committed. --force overrides that one check.
 
+The typo inventory is automatic: a word that is not in the dictionary but is one
+adjacent swap, one extra letter or one missing letter away from a word that is,
+seen at most twice. Words that repeat are jargon, not slips, and so is anything
+in ../references/jargon.txt: add a word there when the inventory flags vocabulary
+the system word list does not know. It under-counts (a slip two edits away is
+invisible) and cannot see wrong-word errors at all, since those need context. Read
+the list it prints before trusting the class weights.
+
 Rerun this after a few months of new sessions to check the rules still hold.
 """
+import collections
+import datetime
 import glob
 import json
 import os
@@ -25,11 +36,13 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from voicecheck import leak_terms  # noqa: E402
+from voicecheck import leak_terms       # noqa: E402
+from slipplan import load_dict, is_real  # noqa: E402
 
 HOME = os.path.expanduser("~")
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_OUT = os.path.join(SKILL_DIR, "references", "voice_corpus.txt")
+PROFILE = os.path.join(SKILL_DIR, "references", "profile.json")
 DROP_PREFIX = ("Caveat:", "[Request interrupted", "<", "This session is being continued")
 DROP_SUBSTR = ("tool_use_id", "Analysis:\nLet me chronologically")
 SHORT = 700  # above this, it is a pasted prompt or a summary, not typing
@@ -39,6 +52,22 @@ HOMEPATH = re.compile(r"/(?:Users|home)/[^/\s]+")
 TOKEN = re.compile(r"\b(?:sk|pk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{16,}|"
                    r"\bAKIA[A-Z0-9]{16}\b|\bxox[baprs]-[A-Za-z0-9-]+|"
                    r"\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}")
+
+LETTERS = "abcdefghijklmnopqrstuvwxyz"
+# "double" means any extra letter, not only a doubled one. It is the class slipplan
+# generates as a doubled letter, and the name is kept so the two tools agree.
+CLASSES = ("swap", "double", "drop")
+MAX_REPEATS = 2   # a misspelling that recurs identically is a habit or jargon
+
+# Contractions with the apostrophe dropped. Chat shorthand, not motor errors, and
+# they are stripped from published text along with the lowercase openings.
+CONTRACTIONS = {
+    "youre", "theyre", "were", "dont", "doesnt", "didnt", "cant", "wont", "wouldnt",
+    "couldnt", "shouldnt", "isnt", "arent", "wasnt", "werent", "hasnt", "havent",
+    "hadnt", "thats", "whats", "theres", "heres", "wheres", "hes", "shes", "ive",
+    "youve", "weve", "theyve", "ill", "youll", "itll", "theyll", "youd", "hed",
+    "shed", "wed", "theyd", "lets", "aint",
+}
 
 
 def redact(text, terms):
@@ -94,32 +123,104 @@ def collect():
     return rows
 
 
-def report(typed):
+def measure(typed):
     blob = "\n".join(typed)
+
     def n(pat):
         return len(re.findall(pat, blob))
-    stats = [
-        ("em dash", n(r"[—–]")),
-        ("spaced hyphen ' - '", n(r" - ")),
-        ("emoji", n(r"[\U0001F300-\U0001FAFF]")),
-        ("'lets'", n(r"\blets\b")),
-        ("'let's'", n(r"\blet's\b")),
-        ("'can we'", n(r"\bcan we\b")),
-        ("question marks", n(r"\?")),
-        ("exclamation marks", n(r"!")),
-        ("British spellings", n(r"\b(licence|colour|favour|centre|metre)\b")),
+
+    return {
+        "em_dash": n(r"[—–]"),
+        "spaced_hyphen": n(r" - "),
+        "emoji": n(r"[\U0001F300-\U0001FAFF]"),
+        "lets": n(r"\blets\b"),
+        "let_s": n(r"\blet's\b"),
+        "can_we": n(r"\bcan we\b"),
+        "question": n(r"\?"),
+        "bang": n(r"!"),
+        "british": n(r"\b(licence|colour|favour|centre|metre)\b"),
+        "starts_upper": sum(1 for m in typed if m[:1].isupper()),
+        "ends_period": sum(1 for m in typed if m.rstrip().endswith(".")),
+    }
+
+
+def classify_typo(w, real):
+    """(class, correction) if w is one edit from a real word, else None."""
+    for i in range(len(w) - 1):
+        s = w[:i] + w[i + 1] + w[i] + w[i + 2:]
+        if s != w and is_real(s, real):
+            return "swap", s
+    for i in range(len(w)):
+        s = w[:i] + w[i + 1:]
+        if len(s) >= 3 and is_real(s, real):
+            return "double", s
+    for i in range(len(w) + 1):
+        for ch in LETTERS:
+            s = w[:i] + ch + w[i:]
+            if is_real(s, real):
+                return "drop", s
+    return None
+
+
+def typo_inventory(typed, real):
+    """(total words, {typo: (class, correction)})."""
+    words = re.findall(r"[a-z]+", " ".join(typed).lower())
+    found = {}
+    for w, n in collections.Counter(words).items():
+        if len(w) < 4 or n > MAX_REPEATS or w in CONTRACTIONS or is_real(w, real):
+            continue
+        r = classify_typo(w, real)
+        if r:
+            found[w] = r
+    return len(words), found
+
+
+def load_previous():
+    try:
+        with open(PROFILE, encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return None
+
+
+def report(typed, counts, total_words, found, previous):
+    labels = [
+        ("em_dash", "em dash"), ("spaced_hyphen", "spaced hyphen ' - '"),
+        ("emoji", "emoji"), ("lets", "'lets'"), ("let_s", "'let's'"),
+        ("can_we", "'can we'"), ("question", "question marks"),
+        ("bang", "exclamation marks"), ("british", "British spellings"),
     ]
-    width = max(len(k) for k, _ in stats)
-    print(f"\n{len(typed)} hand-typed messages (under {SHORT} chars)\n")
-    for key, val in stats:
-        print(f"  {key:<{width}}  {val}")
-    upper = sum(1 for m in typed if m[:1].isupper())
-    period = sum(1 for m in typed if m.rstrip().endswith("."))
-    print(f"  {'starts uppercase':<{width}}  {upper}/{len(typed)}")
-    print(f"  {'ends with a period':<{width}}  {period}/{len(typed)}")
-    print("\nBaseline measured 2026-09-04 over 90 messages: 0 em dashes, 0 emoji,")
-    print("0 British spellings, 35 'lets', 0 \"let's\". If those have drifted, the")
-    print("rules in ../references/voice.md need rereading.")
+    width = max(len(lbl) for _, lbl in labels) + 2
+    print(f"\n{len(typed)} hand-typed messages (under {SHORT} chars), {total_words} words\n")
+    for key, lbl in labels:
+        print(f"  {lbl:<{width}}  {counts[key]}")
+    print(f"  {'starts uppercase':<{width}}  {counts['starts_upper']}/{len(typed)}")
+    print(f"  {'ends with a period':<{width}}  {counts['ends_period']}/{len(typed)}")
+
+    by_class = {c: sorted(w for w, (k, _) in found.items() if k == c) for c in CLASSES}
+    rate = round(total_words / len(found)) if found else None
+    print(f"\n{len(found)} typos found, 1 per {rate} words" if found else "\nno typos found")
+    for c in CLASSES:
+        print(f"  {c:<8} {len(by_class[c]):>3}   " + " ".join(by_class[c][:12]))
+    print("\n  full inventory (word -> what it probably was):")
+    for w in sorted(found):
+        k, fix = found[w]
+        print(f"    {w:<16} -> {fix:<16} [{k}]")
+
+    if previous:
+        keys = ("em_dash", "emoji", "british", "lets", "let_s")
+        drift = [(k, previous["counts"].get(k), counts[k]) for k in keys
+                 if previous["counts"].get(k) != counts[k]]
+        print(f"\nDrift since profile of {previous.get('generated')} "
+              f"({previous.get('messages')} messages):")
+        if not drift:
+            print("  none on the load-bearing counts.")
+        for k, old, new in drift:
+            print(f"  {k}: {old} -> {new}")
+        zeros = [k for k in ("em_dash", "emoji", "british", "let_s") if counts[k]]
+        if zeros:
+            print(f"  A previously-zero count is now nonzero: {', '.join(zeros)}.")
+            print("  Reread ../references/voice.md before trusting the absolutes.")
 
 
 def main(argv):
@@ -148,7 +249,32 @@ def main(argv):
             if len(text) < SHORT:
                 fh.write(f"=== {ts[:19]}\n{text}\n")
     print(f"wrote {out} ({len(typed)} of {len(rows)} messages kept, redacted)")
-    report(typed)
+
+    counts = measure(typed)
+    total_words, found = typo_inventory(typed, load_dict())
+    previous = load_previous()
+    report(typed, counts, total_words, found, previous)
+
+    by_class = {c: sorted(w for w, (k, _) in found.items() if k == c) for c in CLASSES}
+    profile = {
+        "generated": datetime.date.today().isoformat(),
+        "source": "user turns under 700 characters in ~/.claude/projects/**/*.jsonl",
+        "messages": len(typed),
+        "words": total_words,
+        "counts": counts,
+        "typos": {
+            "found": len(found),
+            "words_per_typo": round(total_words / len(found)) if found else None,
+            "classes": {c: len(by_class[c]) for c in CLASSES},
+            "examples": {c: by_class[c][:8] for c in CLASSES},
+            "note": "automatic, one edit from a dictionary word, seen at most twice; "
+                    "cannot detect wrong-word errors",
+        },
+    }
+    with open(PROFILE, "w", encoding="utf-8") as fh:
+        json.dump(profile, fh, indent=2)
+        fh.write("\n")
+    print(f"\nwrote {PROFILE}")
     return 0
 
 

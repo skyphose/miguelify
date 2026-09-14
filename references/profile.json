@@ -1,0 +1,55 @@
+{
+  "generated": "2026-09-14",
+  "source": "user turns under 700 characters in ~/.claude/projects/**/*.jsonl",
+  "messages": 103,
+  "words": 1398,
+  "counts": {
+    "em_dash": 0,
+    "spaced_hyphen": 25,
+    "emoji": 0,
+    "lets": 39,
+    "let_s": 0,
+    "can_we": 14,
+    "question": 16,
+    "bang": 2,
+    "british": 0,
+    "starts_upper": 2,
+    "ends_period": 2
+  },
+  "typos": {
+    "found": 19,
+    "words_per_typo": 74,
+    "classes": {
+      "swap": 9,
+      "double": 7,
+      "drop": 3
+    },
+    "examples": {
+      "swap": [
+        "acutally",
+        "aldo",
+        "ebst",
+        "eigth",
+        "htis",
+        "jsut",
+        "obisdian",
+        "tkaing"
+      ],
+      "double": [
+        "automatally",
+        "conver",
+        "coupoin",
+        "incoludes",
+        "ledts",
+        "useage",
+        "withg"
+      ],
+      "drop": [
+        "agressive",
+        "histoy",
+        "rsume"
+      ]
+    },
+    "note": "automatic, one edit from a dictionary word, seen at most twice; cannot detect wrong-word errors"
+  }
+}

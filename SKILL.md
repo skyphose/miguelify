@@ -35,17 +35,20 @@ public text as a bonus alongside some other request. He asks, then it runs.
 The one thing that applies with or without this skill is non-negotiable 3, no Claude
 attribution. That is a standing preference recorded in memory, not a rule of this skill.
 
-The rules below are measured, not guessed. They come from 90 hand-typed messages in
-`~/.claude/projects/**/*.jsonl` plus the repo text he has actually shipped
+The rules below are measured, not guessed. They come from 103 hand-typed messages in
+`~/.claude/projects/**/*.jsonl` (90 when first measured on 2026-09-04, rescraped
+2026-09-14 with every count holding) plus the repo text he has actually shipped
 (`boulder-dice-insert/README.md`, `LISTING.md`, and the commit logs of four repos).
-`references/voice.md` has the corpus numbers and the quotes behind each rule.
+`references/voice.md` has the corpus numbers and the quotes behind each rule, and
+`references/profile.json` holds the raw counts, written by the scraper and read by the
+tools.
 
 ## The four non-negotiables
 
 These are absolutes. They were counted, and the count was zero or near it.
 
-1. **No em dashes.** Zero across 90 typed messages. He writes a spaced hyphen ` - `
-   (21 uses). The shipped README has 56 em dashes, every one of them assistant drift.
+1. **No em dashes.** Zero across 103 typed messages. He writes a spaced hyphen ` - `
+   (25 uses). The shipped README has 56 em dashes, every one of them assistant drift.
    **Default to the spaced hyphen ` - `**, chosen by him on 2026-09-04 from rendered
    A/B samples. It is literally his punctuation, and it keeps an aside reading as an
    aside. Use a comma, a colon or two sentences only where the hyphen genuinely hurts.
@@ -98,7 +101,7 @@ defensiveness, no burying it in a changelog.
 semicolon or a colon, when a trade-off genuinely needs unpacking. Tables for anything
 with variants or specs.
 
-**Lowercase in running prose.** He starts 88 of 90 messages lowercase and it is his
+**Lowercase in running prose.** He starts 101 of 103 messages lowercase and it is his
 normal register, so sentences in body prose start lowercase. Three things keep their
 caps, because lowercasing them costs something real:
 
@@ -121,7 +124,8 @@ Everything below follows from that one test.
 
 **Rate.** One slip per 200-400 words, with each gap drawn at random rather than on a
 fixed stride. A 2,000-word README gets roughly 5 to 10. His natural typing rate is 1 per
-49 words; published text is deliberately about six times sparser than that.
+49 words by hand count and 1 per 74 by the scraper's stricter automatic count. Published
+text is deliberately four to six times sparser than that.
 
 **The three permitted classes**, taken from how he actually mistypes:
 
@@ -147,6 +151,10 @@ document where the detent is the subject; that reads as the wrong term, not as a
 **Never** slip the same word twice in one document, put two slips in one paragraph, or
 put one in the first sentence of a section, where he is orienting and it costs the most.
 
+**Never** slip a word in a sentence that is itself about typos or slips. It reads as a
+joke, and a joke reads as intentional, which is the opposite of the point. Reject that
+site and take a neighboring word.
+
 **Never-slip zones.** Code fences, inline code, identifiers, numbers and units, the fit
 spec, commands, paths, URLs, tags, licence names, headings.
 
@@ -159,8 +167,9 @@ skills, `job-apply` wins and the text stays clean.
 **Do not add a spellchecker** or a CI spell job to these repos. It would mechanically
 undo all of this.
 
-Place slips with `tools/slipplan.py`, which picks the positions at random and refuses any
-candidate that is a real word. Doing it by hand produces predictable placements and
+Place slips with `tools/slipplan.py`, which picks the positions at random, draws the
+class per site from the weights in `references/profile.json`, and refuses any candidate
+that is a real word or a word in `references/jargon.txt`. Doing it by hand produces predictable placements and
 suspiciously cute typos.
 
 ## Banned constructions
@@ -180,7 +189,7 @@ Cut on sight. These are the tells that mark text as machine-written.
 
 ## What NOT to carry over from his chat register
 
-His typed messages skip terminal periods (88 of 90) and use "lets" (35 uses, never
+His typed messages skip terminal periods (101 of 103) and use "lets" (39 uses, never
 "let's"). Those two are chat shorthand: **published prose keeps its full stops and
 spells out "let's"**, or avoids the contraction entirely.
 
@@ -237,5 +246,8 @@ See `references/surfaces.md` for the full set. The short version:
 
 If the corpus should be rebuilt after he has written more:
 `python3 ~/.claude/skills/miguelify/tools/extract_voice_corpus.py`
-It writes to `references/voice_corpus.txt`, which is gitignored, and redacts the leak
-list on the way out. It refuses any other target that git would pick up.
+It writes the corpus to `references/voice_corpus.txt` (gitignored, redacted) and the
+counts to `references/profile.json` (tracked), and prints the drift against the previous
+profile. If a previously-zero count has gone nonzero, reread `references/voice.md`
+before trusting the absolutes. If the typo inventory flags real vocabulary, add it to
+`references/jargon.txt` and rerun.

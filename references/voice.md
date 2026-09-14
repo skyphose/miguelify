@@ -3,10 +3,11 @@
 Derived 2026-09-04 from Miguel's own text. Two corpora, deliberately kept separate,
 because they are two different registers.
 
-**Corpus A - what he types.** 101 user messages extracted from
-`~/.claude/projects/**/*.jsonl`, filtered to the 90 under 700 characters. The 11 long
+**Corpus A - what he types.** 111 user messages extracted from
+`~/.claude/projects/**/*.jsonl`, filtered to the 103 under 700 characters. The 8 long
 ones were assistant-authored prompts and compaction summaries, and were discarded.
-Rebuild with `tools/extract_voice_corpus.py`.
+Rebuild with `tools/extract_voice_corpus.py`, which also writes `profile.json`, the
+counts the tools quote, and prints the drift against the previous profile.
 
 **Corpus B - what he ships.** `boulder-dice-insert/README.md` and `LISTING.md`, plus
 `git log` across `boulder-dice-insert` and three repos that are not public. This is text an assistant drafted and he then corrected, cut and approved,
@@ -15,21 +16,24 @@ so it shows his editorial judgment rather than his keystrokes.
 Rules that hold in **both** corpora are load-bearing. Rules that appear only in B are
 suspect, and a few of them turned out to be drift he never asked for.
 
-## Measured counts, Corpus A (90 messages)
+## Measured counts, Corpus A (103 messages, 1,398 words)
 
-| Feature | Count |
-|---|---|
-| Em dash | **0** |
-| Spaced hyphen ` - ` | 21 |
-| Emoji | **0** |
-| "lets" | 35 |
-| "let's" | **0** |
-| "can we ..." | 12 |
-| Question marks | 14 |
-| Exclamation marks | 2 |
-| British spellings | 0 |
-| Messages starting uppercase | 2 / 90 |
-| Messages ending with a period | 2 / 90 |
+| Feature | 2026-09-04 (90 msgs) | 2026-09-14 (103 msgs) |
+|---|---|---|
+| Em dash | **0** | **0** |
+| Spaced hyphen ` - ` | 21 | 25 |
+| Emoji | **0** | **0** |
+| "lets" | 35 | 39 |
+| "let's" | **0** | **0** |
+| "can we ..." | 12 | 14 |
+| Question marks | 14 | 16 |
+| Exclamation marks | 2 | 2 |
+| British spellings | 0 | 0 |
+| Messages starting uppercase | 2 / 90 | 2 / 103 |
+| Messages ending with a period | 2 / 90 | 2 / 103 |
+
+Ten days and 13 messages later every zero held and no ratio moved by more than a
+point. The scraper prints this drift itself on each run, so the check is free.
 
 ## The drift finding
 
@@ -72,8 +76,8 @@ always slightly a lie".
 
 ## Typo inventory
 
-Extracted by checking every word in Corpus A against `/usr/share/dict/words`, then
-discarding proper nouns, URLs, project jargon and dictionary gaps by hand.
+**By hand, 2026-09-04.** Every word in Corpus A checked against `/usr/share/dict/words`,
+then proper nouns, URLs, project jargon and dictionary gaps discarded by reading.
 
 **25 real typos in 1,226 hand-typed words, a natural rate of 1 per 49.**
 
@@ -83,6 +87,17 @@ discarding proper nouns, URLs, project jargon and dictionary gaps by hand.
 | Dropped letter | 3 | `histoy` `conver` `eigth` |
 | Doubled or extra letter | ~8 | `agressive` `incoludes` `useage` `easyer` `mimicing` `automatally` `detends` |
 | **Wrong-word / homophone** | **0** | none |
+
+**Automatically, 2026-09-14.** The scraper now does the inventory itself. A word counts
+as a typo if it is not in the dictionary or `jargon.txt`, is not a dropped-apostrophe
+contraction, appears at most twice, and is one adjacent swap, one extra letter or one
+missing letter away from a real word. On 1,398 words it finds **19 typos, 1 per 74**:
+9 swaps, 7 extra letters, 3 dropped. It finds fewer than the hand pass because a
+substitution (`easyer`, `detends`) or a two-edit slip (`pgorgress`, `cirriculum`) is
+invisible to it, and it cannot judge a wrong-word error at all. The class ratio it
+measures, 47/37/16, is within a few points of the hand-derived 52/35/13. The profile
+is what `slipplan.py` actually draws from, with add-one smoothing so a class measured
+at zero still turns up occasionally.
 
 The zero in the last row is the load-bearing finding. Across 1,226 words he never once
 wrote their for there, its for it's, or form for from. Every slip he makes is a motor
@@ -106,8 +121,9 @@ comma/semicolon. His reasoning matched the sample text: it keeps an aside feelin
 aside. The semicolon option was explicitly the weakest, since he has never typed one.
 
 **All three slip classes, mixed** - not transposition only. So `slipplan.py` draws a
-class per site weighted to his real distribution (swap 0.52, double 0.35, drop 0.13)
-rather than listing every transposition first. Before this was fixed the tool always
+class per site weighted to the measured distribution in `profile.json` (9/7/3 as of
+2026-09-14, smoothed to about 45/36/18, with the hand count 0.52/0.35/0.13 as the
+fallback when no profile exists) rather than listing every transposition first. Before this was fixed the tool always
 showed swaps at the top of every site, which would have quietly produced
 transposition-only documents.
 

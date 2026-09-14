@@ -1,0 +1,36 @@
+# Words the system dictionary does not know but are not typos. One per line, lowercase,
+# base form only: plurals and -ed/-ing forms are matched automatically.
+#
+# Both tools read this. The scraper skips these when counting typos, and slipplan
+# refuses to place a slip that would land on one. Add a word here when the scraper's
+# inventory flags vocabulary you actually use.
+
+# software
+email
+json
+readme
+repo
+url
+api
+config
+cli
+github
+intel
+
+# 3D printing and card games
+openscad
+scad
+stl
+3mf
+printables
+makerworld
+thingiverse
+pla
+petg
+mtg
+tcg
+pokemon
+
+# words used on purpose that the dictionary lacks
+moreso
+profileid

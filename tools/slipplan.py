@@ -4,8 +4,9 @@
 Usage:  slipplan.py FILE [--seed N] [--min 200] [--max 400]
 
 Picks positions at random, one slip every 200-400 words, and proposes candidate
-slips built from the three ways Miguel actually mistypes: an adjacent letter swap,
-a dropped letter, a doubled letter.
+slips built from the three classes measured in the corpus: an adjacent letter swap,
+a dropped letter, a doubled letter. The class is drawn per site with the weights in
+../references/profile.json, so the mix tracks how the corpus author really mistypes.
 
 It refuses any candidate that is itself a real English word. That is the rule the
 whole thing rests on -- a slip landing on a valid word gets accepted by the eye and
@@ -17,12 +18,15 @@ Suggestions only. Nothing is written. Pick one per site and edit by hand, and re
 any that collides with a load-bearing technical term. See ../SKILL.md.
 """
 import argparse
+import json
 import os
 import random
 import re
 import sys
 
 DICT = "/usr/share/dict/words"
+PROFILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                       "references", "profile.json")
 MIN_LEN = 5          # shorter words swap into real words too easily
 PREFER_LEN = 7       # transposition is most transparent from here up
 SKIP_LINE = re.compile(r"^\s*(#{1,6}\s|\||>\s*\*\*|\s*[-*]\s*$)")
@@ -31,20 +35,37 @@ URLISH = re.compile(r"https?://|\w+\.(com|org|net|io|md|py|scad|stl)\b|/\w+/")
 WORD = re.compile(r"[A-Za-z]+")
 
 
+JARGON = os.path.join(os.path.dirname(PROFILE), "jargon.txt")
+
+
 def load_dict():
+    """The system word list plus ../references/jargon.txt, one word per line.
+
+    The word list is old and has no "email", "json" or "repo", so without the jargon
+    file those read as typos to the scraper and as safe slip targets to this tool.
+    """
     try:
         with open(DICT, errors="ignore") as fh:
-            return {w.strip().lower() for w in fh if w.strip()}
+            words = {w.strip().lower() for w in fh if w.strip()}
     except OSError:
         print(f"warning: {DICT} not found, real-word filter disabled", file=sys.stderr)
         return set()
+    try:
+        with open(JARGON, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.split("#", 1)[0].strip().lower()
+                if line:
+                    words.add(line)
+    except OSError:
+        pass
+    return words
 
 
 def prose_tokens(lines):
     """Every prose word in reading order, flagged for whether it may carry a slip.
 
-    The spacing interval counts ALL prose words, since that is what he reads, but a
-    slip may only land on an eligible one. Counting only eligible words made the rate
+    The spacing interval counts ALL prose words, since that is what the reader reads,
+    but a slip may only land on an eligible one. Counting only eligible words made the rate
     silently ~3x too sparse on documents dense with numbers and specs.
     """
     out = []
@@ -78,22 +99,46 @@ def is_real(cand, real_words):
     if c in real_words:
         return True
     for suf in SUFFIXES:
-        if c.endswith(suf):
-            stem = c[: -len(suf)]
-            if len(stem) >= 3 and (stem in real_words or stem + "e" in real_words):
-                return True
+        if not c.endswith(suf):
+            continue
+        stem = c[: -len(suf)]
+        if len(stem) < 3:
+            continue
+        if stem in real_words or stem + "e" in real_words:
+            return True
+        if suf == "ies" and stem + "y" in real_words:       # categories -> category
+            return True
+        if len(stem) >= 4 and stem[-1] == stem[-2] and stem[:-1] in real_words:
+            return True                                     # flipped -> flip
     return False
 
 
-# His measured distribution: ~12 transpositions, ~8 doubled, 3 dropped out of 23.
 # Drawing the class per site (rather than listing every swap first, which is what an
-# unweighted flat list does) is what keeps output from collapsing to swaps only.
+# unweighted flat list does) is what keeps output from collapsing to swaps only. The
+# weights come from the profile the scraper writes, smoothed so a class measured at
+# zero still gets an occasional draw. The fallback is the 2026-09-04 hand count.
 CLASSES = ("swap", "double", "drop")
-CLASS_WEIGHTS = (0.52, 0.35, 0.13)
+FALLBACK_WEIGHTS = (0.52, 0.35, 0.13)
+
+
+def class_weights():
+    try:
+        with open(PROFILE, encoding="utf-8") as fh:
+            cl = json.load(fh)["typos"]["classes"]
+        counts = [cl.get(c, 0) for c in CLASSES]
+        total = sum(counts)
+        if total:
+            return tuple((n + 1) / (total + len(CLASSES)) for n in counts)
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return FALLBACK_WEIGHTS
+
+
+CLASS_WEIGHTS = class_weights()
 
 
 def candidates(word, real_words):
-    """Slips built the three ways he really mistypes, bucketed by class.
+    """Slips built the three measured ways, bucketed by class.
 
     Returns ({class: [candidates]}, rejected_count). Real words are dropped here so
     the readability rule cannot be skipped downstream.
@@ -121,7 +166,7 @@ def candidates(word, real_words):
 
 
 def pick_class(buckets, rng):
-    """Draw a class by his real distribution, falling back if that class is empty."""
+    """Draw a class by the measured distribution, falling back if that class is empty."""
     available = [c for c in CLASSES if buckets[c]]
     if not available:
         return None
@@ -191,7 +236,8 @@ def main():
 
     if plan:
         shown = ", ".join(f"{c} {mix[c]}" for c in CLASSES)
-        print(f"\nclass mix: {shown}   (target roughly 52/35/13)")
+        target = "/".join(str(round(w * 100)) for w in CLASS_WEIGHTS)
+        print(f"\nclass mix: {shown}   (target roughly {target})")
     print(f"{rejected_total} candidate(s) rejected for being real words.")
     print("Suggestions only, nothing written. Pick one per site, reject any that")
     print("collides with a technical term, then edit by hand.")
