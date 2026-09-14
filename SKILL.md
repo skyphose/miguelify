@@ -32,6 +32,10 @@ a task happens to touch a README, write a commit message or push something. Do n
 install it as a git hook, a pre-commit check or a CI step, and do not rewrite his
 public text as a bonus alongside some other request. He asks, then it runs.
 
+It is a final proofreader and editor pass over a draft, and knowing when to run it is
+his call, not a rule written here. A document that should stay formal simply does not
+get the pass, and he knows which ones those are.
+
 The one thing that applies with or without this skill is non-negotiable 3, no Claude
 attribution. That is a standing preference recorded in memory, not a rule of this skill.
 
@@ -204,12 +208,6 @@ site and take a neighboring word.
 
 **Never-slip zones.** Code fences, inline code, identifiers, numbers and units, the fit
 spec, commands, paths, URLs, tags, licence names, headings.
-
-**Absolute exclusion: nothing in the job search.** No resume, cover letter, application
-answer, or any other document produced by or feeding the `job-apply` skill and its
-project directory. Those are read by other people, under scrutiny,
-once. The readability argument does not apply to them at all. If a task touches both
-skills, `job-apply` wins and the text stays clean.
 
 **Do not add a spellchecker** or a CI spell job to these repos. It would mechanically
 undo all of this.

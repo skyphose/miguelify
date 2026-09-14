@@ -74,7 +74,8 @@ matches how i actually mistype.
 a real word. placing them by hand produces predicatble, suspiciously cute typos.
 
 slips never go in headings, code, commands, numbers, units, tags or commit subject lines.
-they never go anywhere near a job application.
+when to run the pass at all is my call. some things should stay formal, and they just do
+not get it.
 
 ## install
 
@@ -114,8 +115,8 @@ document, still need a careful read.
 this encodes **my** voice, measured from **my** writing. run it on your text and you will
 get a document that sounds like me, which is probably not what you want.
 
-it is also not a detector and not an attempt to defeat one. it is a style pass i run on
-my own drafts before they go public, for my own reading experience.
+it is also not a detector and not an attempt to defeat one. it is a final proofreading
+pass i run on my own drafts before they go public, for my own reading experience.
 
 ## make it yours
 
@@ -151,7 +152,8 @@ a project i am working on, not a finished thing. as of 2026-09-14:
 ## private overlay
 
 `references/private.md` is gitignored. it holds the strings that must never appear in a
-public repo: home paths, internal hostnames, vpn ranges, afifliations, job-search files.
+public repo: home paths, internal hostnames, vpn ranges, afifliations, private project
+names.
 `voicecheck.py` reads it and greps every file for those strings, exiting 2 if it finds
 one. with `--git` it also reads the author email and message of every commit on the
 branch, because that is where the first real leak in this repo turned up: a commit

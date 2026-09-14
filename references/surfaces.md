@@ -103,5 +103,3 @@ and only in running prose.
 - Tags and keywords. A misspelled tag costs search traffic.
 - Identifiers, parameter names, commands, paths, URLs, licence names
 - Headings
-- **Anything in the job search.** Resumes, cover letters, application answers, and
-  anything else owned by the `job-apply` skill. No exceptions.

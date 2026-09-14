@@ -1,4 +1,4 @@
-# the private overlay: hostnames, affiliations, home paths, job-search specifics
+# the private overlay: hostnames, affiliations, home paths, private project paths
 references/private.md
 
 # the extracted corpus is raw chat transcripts, never commit it
