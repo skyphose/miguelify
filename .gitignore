@@ -1,0 +1,10 @@
+# the private overlay: hostnames, affiliations, home paths, job-search specifics
+references/private.md
+
+# the extracted corpus is raw chat transcripts, never commit it
+voice_corpus.txt
+*.corpus.txt
+
+__pycache__/
+*.pyc
+.DS_Store
