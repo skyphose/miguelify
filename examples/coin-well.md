@@ -23,7 +23,7 @@ It is now built for **`coin_d = 38.0`** — a ⌀38.8 mm well, which swallows ev
 
 ```
 **this was wrong for a long time and is worth recording.** the well was built around
-`coin_d = 26.0`, a figure assumed rather than looked up. official Pokémon coins actually run
+`coin_d = 26.0`, a figure assumed rather than looked up. official pokemon coins actually run
 **29.8-51.6 mm**. the common modern flip coin is the 34 mm "large", the bigger authorized
 collectible is 38 mm, and 25 mm compact ones and 51 mm jumbos sit at the extremes. a 26.8 mm
 well took only the smallest of them, so for most people the coin simply would not go in.
@@ -33,7 +33,7 @@ it is now built for **`coin_d = 38.0`** - a ⌀38.8 mm well, which swallows ever
 
 ## what changed
 
-five edits, all mechanical:
+six edits, all mechanical:
 
 | before | after | rule |
 |---|---|---|
@@ -42,6 +42,7 @@ five edits, all mechanical:
 | `"large"; the bigger ... 38 mm; 25 mm compact` | `"large", the bigger ... 38 mm, and 25 mm compact` | no semicolons, 0 in the corpus |
 | `authorised` | `authorized` | american spelling |
 | `The well`, `Official`, `It is now` | `the well`, `official`, `it is now` | lowercase running prose |
+| `Pokémon` | `pokemon` | names lowercase, no accent, as typed. 5 of 5 in the corpus |
 
 ## what did not change
 
@@ -50,7 +51,6 @@ five edits, all mechanical:
 - **owning the mistake.** "this was wrong for a long time and is worth recording"
   survives word for word. that sentence is the most miguel thing in the section and
   a rewrite that softened it would have failed.
-- **Pokémon** keeps its capital and its accent. proper nouns are not lowercased.
 - **the code spans.** `coin_d = 26.0` and `coin_d = 38.0` are identifiers.
 - **no slips.** the section is 118 words. at one per 200-400 the planner places
   nothing here, which is the expected result for most individual sections.

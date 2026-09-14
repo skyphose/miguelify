@@ -94,22 +94,69 @@ defensiveness, no burying it in a changelog.
 
 **Second person, direct.** "your deck", "you are giving up", "if you print it".
 
-**Sentence-case headings, often a plain question.** "Will it fit my box?",
-"The dead space in front of your deck", "How it works". Never Title Case.
+**Lowercase headings, often a plain question.** "will it fit my box?", "the dead space
+in front of your deck", "how it works". Never Title Case. Sentence case is what the
+earlier dice-insert README shipped with and is tolerable in a file that already has it.
+New headings are lowercase like everything else.
 
 **Rhythm.** Mostly short declaratives. One longer explanatory sentence, with a
 semicolon or a colon, when a trade-off genuinely needs unpacking. Tables for anything
 with variants or specs.
 
-**Lowercase in running prose.** He starts 101 of 103 messages lowercase and it is his
-normal register, so sentences in body prose start lowercase. Three things keep their
-caps, because lowercasing them costs something real:
+**Lowercase, all of it.** He starts 101 of 103 messages lowercase and it is his normal
+register. Names and acronyms are lowercase too: github, makerworld, pokemon (no accent),
+printables, openscad, stl, mtg, ai, 3d. Measured 2026-09-14 over every word in
+`references/jargon.txt`: **24 of 28** occurrences are lowercase as typed, and the four
+exceptions are one Email, one JSON, one SCAD and the identifier profileId. On product
+names and acronyms alone it is 20 of 22. The scraper rechecks this on every run.
+The earlier version of this rule kept caps on proper nouns and formats "for
+searchability". That was a guess, he never typed them that way, and search is
+case-insensitive anyway. Reversed. A listing title goes lowercase like the rest.
 
-- **Headings**, so a listing or README stays scannable
-- **Proper nouns and product names**: Pokemon, Ultimate Guard, OpenSCAD, Printables
-- **Acronyms, formats and licences**: MTG, TCG, STL, 3MF, PLA, PETG, CC BY-NC-SA
+Two things keep their case, and neither is a style choice:
 
-Emphatic caps on a single word stay too ("a LITTLE more aggressive").
+- **Literals.** Code spans, identifiers, paths, commands, filenames: `coin_d`, `.scad`,
+  `LICENSE`. Changing the case changes the thing.
+- **Emphatic caps on a single word** for intensity ("a LITTLE more aggressive").
+  Measured in both corpora.
+
+A licence identifier in a licence *field* (CC BY-NC-SA 4.0) is a literal. The same words
+in a sentence are not.
+
+## His words
+
+Jargon stays. An assistant draft formalizes vocabulary as it goes, and that is a tell on
+its own: "the repository", "the README file", "utilize", "approximately", "in order to".
+He does not talk like that, and the corpus shows it.
+
+| He writes | Not | Corpus, 103 messages |
+|---|---|---|
+| make | create, build out, construct | 20 : 0 |
+| ok | acceptable, fine as-is | 7 : 0 |
+| please | kindly | 6 : 0 |
+| stuff, thing(s) | materials, components, items | 6 : 1 |
+| print, prints, printed | 3D-printed part, printed component | 5 : 2 |
+| ai | language model, LLM, the assistant | 4 : 0 |
+| use | utilize, leverage | 3 : 0 |
+| repo, readme | repository, README file | 1 : 0 each |
+
+The corpus is 1,398 words, so treat the small rows as direction and the large ones as
+rule. Three habits follow:
+
+- **Never expand a short form.** "repo" does not become "repository" because the text is
+  going public. It was "repo" when he typed it and it stays "repo".
+- **Never gloss a term.** No "STL (stereolithography)" and no "OpenSCAD, a script-based
+  CAD tool". A reader on Printables knows what an stl is. A reader on GitHub can search.
+- **Never upgrade a plain verb.** make, use, fix, try, check. Not create, utilize,
+  resolve, attempt, validate.
+
+What he does *not* do is textspeak: 1 "rn", 0 "tbh", 0 "imo", 0 "lol". Plain words,
+lowercase, is the register. Not abbreviation for its own sake.
+
+`references/jargon.txt` is the list of his vocabulary that the system dictionary does not
+know. It exists so the tools protect those words: the scraper does not count them as
+typos and the slip planner never produces one by accident. Nothing in this skill removes,
+replaces, expands or capitalizes a word on that list.
 
 ## Deliberate slips
 

@@ -49,8 +49,9 @@ Order that matches his shipped README:
 
 ## Model listings (Printables / MakerWorld / Thingiverse)
 
-- **Title**: what it is, plus the single differentiator. "Universal Dice Insert for
-  Top-Opening Deck Boxes - with or without a coin well".
+- **Title**: what it is, plus the single differentiator, lowercase like everything else:
+  "universal dice insert for top-opening deck boxes - with or without a coin well".
+  Search on every model site is case-insensitive, so caps buy nothing there.
 - **Summary**: one or two lines, concrete. What it does, how many variants, whether the
   source is parametric.
 - **Description** opens on the problem in the reader's own terms, then names the object.
@@ -58,7 +59,8 @@ Order that matches his shipped README:
 - A "will it fit / will it work for me" section that gives the reader a measurement to
   take themselves.
 - An explicit trade-off paragraph.
-- Tags lowercase, unquoted, generous.
+- Tags lowercase, unquoted, generous. Use his words: "deck box", "dice", "mtg", "tcg",
+  not "trading card game accessory".
 - Licence field: CC BY-NC-SA 4.0 has been his default on models. Confirm, do not assume.
 
 ## GitHub profile, bios, issue and PR replies

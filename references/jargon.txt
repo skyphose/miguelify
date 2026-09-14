@@ -1,9 +1,11 @@
-# Words the system dictionary does not know but are not typos. One per line, lowercase,
-# base form only: plurals and -ed/-ing forms are matched automatically.
+# His vocabulary that the system word list does not know. One per line, lowercase, base
+# form only: plurals and -ed/-ing forms are matched automatically.
 #
-# Both tools read this. The scraper skips these when counting typos, and slipplan
-# refuses to place a slip that would land on one. Add a word here when the scraper's
-# inventory flags vocabulary you actually use.
+# These words are kept, never corrected. Three tools read this file:
+#   - the scraper does not count them as typos, and measures how they are cased
+#   - slipplan refuses to produce one of them as a "misspelling" of something else
+#   - voicecheck flags a capitalized form in prose, since the corpus types them lowercase
+# Add a word here when the scraper's inventory flags vocabulary you actually use.
 
 # software
 email
@@ -30,6 +32,7 @@ petg
 mtg
 tcg
 pokemon
+riftbound
 
 # words used on purpose that the dictionary lacks
 moreso

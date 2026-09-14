@@ -37,7 +37,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from voicecheck import leak_terms       # noqa: E402
-from slipplan import load_dict, is_real  # noqa: E402
+from slipplan import load_dict, is_real, JARGON  # noqa: E402
 
 HOME = os.path.expanduser("~")
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -175,6 +175,32 @@ def typo_inventory(typed, real):
     return len(words), found
 
 
+def jargon_words():
+    try:
+        with open(JARGON, encoding="utf-8") as fh:
+            return [ln.split("#", 1)[0].strip() for ln in fh if ln.split("#", 1)[0].strip()]
+    except OSError:
+        return []
+
+
+def casing(typed, words):
+    """How the corpus author cases the vocabulary in jargon.txt, exact forms as typed.
+
+    This is what backs the lowercase-names rule: product names and acronyms are
+    lowercase in the corpus, so they stay lowercase in published prose.
+    """
+    blob = "\n".join(typed)
+    forms = {}
+    for w in words:
+        c = collections.Counter(m.group() for m in
+                                re.finditer(r"\b" + re.escape(w) + r"s?\b", blob, re.I))
+        if c:
+            forms[w] = dict(c.most_common())
+    lower = sum(n for f in forms.values() for k, n in f.items() if k == k.lower())
+    total = sum(n for f in forms.values() for n in f.values())
+    return {"lowercase": lower, "total": total, "forms": forms}
+
+
 def load_previous():
     try:
         with open(PROFILE, encoding="utf-8") as fh:
@@ -206,6 +232,12 @@ def report(typed, counts, total_words, found, previous):
     for w in sorted(found):
         k, fix = found[w]
         print(f"    {w:<16} -> {fix:<16} [{k}]")
+
+    cs = casing(typed, jargon_words())
+    if cs["total"]:
+        odd = [f"{k} {n}" for f in cs["forms"].values() for k, n in f.items() if k != k.lower()]
+        print(f"\ncasing of jargon.txt words: {cs['lowercase']} of {cs['total']} lowercase"
+              + (f"   (not: {', '.join(odd)})" if odd else ""))
 
     if previous:
         keys = ("em_dash", "emoji", "british", "lets", "let_s")
@@ -262,6 +294,7 @@ def main(argv):
         "messages": len(typed),
         "words": total_words,
         "counts": counts,
+        "casing": casing(typed, jargon_words()),
         "typos": {
             "found": len(found),
             "words_per_typo": round(total_words / len(found)) if found else None,

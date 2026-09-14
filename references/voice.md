@@ -129,13 +129,63 @@ transposition-only documents.
 
 ## Chat-only, do not publish
 
-Lowercase openings, absent terminal periods, "lets", and fast typos ("wokr",
-"cirriculum", "acutally", "htis"). These are keyboard speed, not style. He fixes them
-when text goes public, and so should you.
+Absent terminal periods (101 of 103), "lets" for "let's" (39 : 0), and dropped
+apostrophes ("dont", "youre"). These are keyboard speed, not style, and they are
+restored when text goes public.
+
+Two things that look like keyboard speed are not, by his explicit decision: lowercase
+(2026-09-04, "no caps normally", extended to names and acronyms on 2026-09-14) and
+typos (kept at 1 per 200-400 words, see SKILL.md). Both carry over.
 
 The `*` correction convention ("* text histoy", "*back to the non-reversible version")
 is chat-only too, but it is worth reading as intent: he corrects tersely and expects the
 correction applied without discussion.
+
+## Lexicon and casing (measured 2026-09-14)
+
+Vocabulary, his short form against the formal one an assistant draft reaches for:
+
+| Short | Count | Formal | Count |
+|---|---|---|---|
+| make | 20 | create | 0 |
+| ok / okay | 7 | acceptable | 0 |
+| please | 6 | kindly | 0 |
+| print / prints / printed | 5 | 3d print / 3d-printed | 2 |
+| ai | 4 | language model, LLM | 0 |
+| stuff | 3 | materials | 1 |
+| thing / things | 3 | components, items | 0 |
+| use | 3 | utilize | 0 |
+| repo | 1 | repository | 0 |
+| readme | 1 | README file | 0 |
+
+Casing of names and acronyms, exact forms as typed:
+
+| Word | Forms |
+|---|---|
+| pokemon | pokemon 5, no accent |
+| ai | ai 4 |
+| github | github 3 |
+| makerworld | makerworld 3 |
+| printables | printables 2 |
+| 3d | 3d 2 |
+| openscad | openscad 1 |
+| stl | stl 1 |
+| mtg | mtg 1 |
+| claude | claude 1 |
+| scad | SCAD 1 |
+| json | JSON 1 |
+
+**20 of 22 lowercase** on product names and acronyms, **24 of 28** across every word in
+`jargon.txt` (the profile's figure, which the linter quotes). The SKILL.md rule that kept
+caps on proper nouns and formats was
+a judgment call from 2026-09-04, made for searchability, and it was wrong on both
+counts: he does not type them that way and search does not care. Reversed 2026-09-14.
+The scraper now records this per word in `profile.json` under `casing`, for every word
+in `jargon.txt`, so the rule can be rechecked as the corpus grows.
+
+Textspeak is nearly absent: "rn" 1, "ok" 7, and nothing from the rest of the usual set
+(tbh, imo, idk, lol, btw, kinda, gonna). Plain lowercase words is the register, not
+abbreviation.
 
 ## A note on this file
 

@@ -55,25 +55,51 @@ CHECKS = [
     ("intro",    "med",  r"^#{0,3}\s*Introducing\b",
      "'Introducing' opener: name the thing instead."),
     ("titlecase","low",  r"^#{1,6} (?:[A-Z][a-z]+ ){2,}[A-Z][a-z]+\s*$",
-     "Title Case heading: shipped docs use sentence case."),
+     "Title Case heading: headings are lowercase like the rest of the prose."),
     ("arrow",    "low",  r"→",
      "Unicode arrow: shipped commits and docs use ASCII '->'."),
     ("bang",     "low",  r"!(?!\[|=|\]|\))",
      "exclamation mark: {bang} in {messages} typed messages. Almost always cut."),
     ("labelbul", "low",  r"^\s*[-*] \*\*[A-Z][^*]{1,30}:\*\*",
      "bolded-label bullet: fine occasionally, not as the house format."),
+    ("formal",   "med",  r"\b(?:repositor(?:y|ies)|utili[sz](?:e|es|ed|ing|ation)|approximately|"
+                         r"in order to|kindly|README files?|prior to|subsequently)\b",
+     "formal word with 0 uses in {messages} typed messages: repo not repository, use not "
+     "utilize, about not approximately, before not prior to."),
 ]
+
+# Capitalized forms of the vocabulary in jargon.txt: github, openscad, stl, mtg. The
+# corpus types them lowercase, so published prose does too. Checked outside CHECKS
+# because the word list is read from a file, not written into a regex here.
+NAMECAPS = ("namecaps", "low",
+            "capitalized name: the corpus types names and acronyms lowercase, "
+            "{jargon_lower} of {jargon_total}. github, openscad, pokemon, stl, mtg.")
 
 # Lines where a tell is being quoted as evidence rather than used.
 EXEMPT = re.compile(r"^\s*(>|\|)|zero (em dash|in )|never typed")
+INLINE_CODE = re.compile(r"`[^`]*`")
+HEADING = re.compile(r"^#{1,6} ")
 
 SELF_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRIVATE = os.path.join(SELF_DIR, "references", "private.md")
 PROFILE = os.path.join(SELF_DIR, "references", "profile.json")
+JARGON = os.path.join(SELF_DIR, "references", "jargon.txt")
+
+
+def jargon_words():
+    try:
+        with open(JARGON, encoding="utf-8") as fh:
+            return [ln.split("#", 1)[0].strip() for ln in fh if ln.split("#", 1)[0].strip()]
+    except OSError:
+        return []
+
+
+JARGON_RX = [re.compile(r"\b" + re.escape(w) + r"s?\b", re.I) for w in jargon_words()]
 
 # Numbers quoted in the messages above. The shipped baseline is the fallback when
 # no profile has been generated yet; extract_voice_corpus.py overwrites them.
-BASELINE = {"messages": 90, "em_dash": 0, "emoji": 0, "british": 0, "bang": 2}
+BASELINE = {"messages": 90, "em_dash": 0, "emoji": 0, "british": 0, "bang": 2,
+            "jargon_lower": 20, "jargon_total": 22}
 
 
 def profile_fields():
@@ -84,6 +110,9 @@ def profile_fields():
         fields["messages"] = prof["messages"]
         for k in ("em_dash", "emoji", "british", "bang"):
             fields[k] = prof["counts"][k]
+        if prof.get("casing", {}).get("total"):
+            fields["jargon_lower"] = prof["casing"]["lowercase"]
+            fields["jargon_total"] = prof["casing"]["total"]
     except (OSError, ValueError, KeyError):
         pass
     return fields
@@ -102,12 +131,21 @@ def scan(lines):
             continue
         if in_fence or EXEMPT.search(line):
             continue
+        prose = INLINE_CODE.sub(" ", line)   # a literal keeps its case and its dashes
         for cid, sev, pat, msg in CHECKS:
-            hits = re.findall(pat, line)
+            hits = re.findall(pat, prose)
             if hits:
                 rec = found.setdefault(cid, [sev, msg, [], 0])
                 rec[2].append(n)
                 rec[3] += len(hits)
+        if not HEADING.match(line):
+            caps = sum(1 for rx in JARGON_RX for m in rx.finditer(prose)
+                       if m.group() != m.group().lower())
+            if caps:
+                cid, sev, msg = NAMECAPS
+                rec = found.setdefault(cid, [sev, msg, [], 0])
+                rec[2].append(n)
+                rec[3] += caps
     return found
 
 

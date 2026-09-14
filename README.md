@@ -2,8 +2,8 @@
 
 a claude code skill that takes ai-drafted text and rewrites it so it reads like i wrote
 it. it is a rewrite pass over assistant output, not a generator. the facts, numbers and
-structure of the draft survive. the punctuation, the register and the honesty rules
-become mine.
+structure of the draft survive. the punctuation, the vocabulary, the register and the
+honesty rules become mine.
 
 i built it because my own published repos had quietly acquired a house style i never
 chose. the readme for one of my 3d models had **56 em dashes** in it. i have typed
@@ -16,8 +16,8 @@ four stages. the first and last are tools, the middle two are reading.
 
 1. **scrape.** `tools/extract_voice_corpus.py` pulls my own typed messages out of my
    claude code transcripts, redacts anything private, and measures them: dash and emoji
-   counts, spelling, how sentences start and end, and a typo inventory sorted into the
-   three classes i actually produce. it writes the numbers to `references/profile.json`
+   counts, spelling, how sentences start and end, how i case names like github and
+   openscad, and a typo inventory sorted into the three classes i actually produce. it writes the numbers to `references/profile.json`
    and prints the drift since the last run. that file is tracked, so every rule can
    point at a measurement instead of a feeling.
 2. **lint.** `tools/voicecheck.py` is a regex pass over the mechanical tells: em dashes,
@@ -50,6 +50,12 @@ no throat-clearing, put real numbers with units on every claim, hand the reader 
 they can run, and say who the thing is **not** for before listing what it does well. that
 last one is the most distinctive thing in my published writing and the first thing a
 draft drops.
+
+it also keeps my words. an ai draft formalizes as it goes: `repository`, `utilize`,
+`approximately`, `the README file`. i type repo, use, about, readme, and the corpus
+backs that up, make over create is 20 to 0. names go lowercase too, github, openscad,
+pokemon, stl, mtg, because that is how i type them, 20 times out of 22. nothing gets
+expanded, glossed or capitalized on the way out.
 
 ## the typos are on purpose
 
@@ -118,8 +124,10 @@ the machinery is the reusable part and the rules are not. in order:
 1. clone it and run `python3 tools/extract_voice_corpus.py`. it reads your own claude
    code tarnscripts and overwrites `references/profile.json` with your counts.
 2. read the typo inventory it prints. anything that is your vocabulary rather than a slip
-   goes in `references/jargon.txt`, one word per line. rerun until the list is only real
-   slips. on my corpus that took two passes and 24 words.
+   goes in `references/jargon.txt`, one word per line. that file is your words and the
+   tools protect it: nothing on it is counted as a typo, corrected, expanded or produced
+   as a slip. rerun until the inventory is only real slips. on my corpus that took two
+   passes and 25 words.
 3. copy `references/private.example.md` to `references/private.md` and fill in the
    strings that must never leave your machine.
 4. rewrite `SKILL.md` and `references/voice.md` against your numbers. if your em dash

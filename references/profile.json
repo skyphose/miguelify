@@ -1,11 +1,11 @@
 {
   "generated": "2026-09-14",
   "source": "user turns under 700 characters in ~/.claude/projects/**/*.jsonl",
-  "messages": 103,
-  "words": 1398,
+  "messages": 104,
+  "words": 1417,
   "counts": {
     "em_dash": 0,
-    "spaced_hyphen": 25,
+    "spaced_hyphen": 26,
     "emoji": 0,
     "lets": 39,
     "let_s": 0,
@@ -16,9 +16,64 @@
     "starts_upper": 2,
     "ends_period": 2
   },
+  "casing": {
+    "lowercase": 24,
+    "total": 28,
+    "forms": {
+      "email": {
+        "Email": 1,
+        "email": 1
+      },
+      "json": {
+        "JSON": 1
+      },
+      "readme": {
+        "readmes": 1
+      },
+      "repo": {
+        "repos": 1
+      },
+      "github": {
+        "github": 3
+      },
+      "intel": {
+        "intel": 1
+      },
+      "openscad": {
+        "openscad": 1
+      },
+      "scad": {
+        "SCAD": 1
+      },
+      "stl": {
+        "stl": 1
+      },
+      "printables": {
+        "printables": 2
+      },
+      "makerworld": {
+        "makerworld": 3
+      },
+      "mtg": {
+        "mtg": 1
+      },
+      "pokemon": {
+        "pokemon": 5
+      },
+      "riftbound": {
+        "riftbound": 3
+      },
+      "moreso": {
+        "moreso": 1
+      },
+      "profileid": {
+        "profileId": 1
+      }
+    }
+  },
   "typos": {
     "found": 19,
-    "words_per_typo": 74,
+    "words_per_typo": 75,
     "classes": {
       "swap": 9,
       "double": 7,
