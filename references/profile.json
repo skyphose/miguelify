@@ -1,26 +1,26 @@
 {
-  "generated": "2026-09-14",
+  "generated": "2026-09-15",
   "source": "user turns under 700 characters in ~/.claude/projects/**/*.jsonl",
-  "messages": 105,
-  "words": 1423,
+  "messages": 108,
+  "words": 1446,
   "counts": {
     "em_dash": 0,
     "spaced_hyphen": 26,
     "emoji": 0,
-    "lets": 39,
+    "lets": 43,
     "let_s": 0,
     "can_we": 14,
     "question": 17,
     "bang": 2,
     "british": 0,
     "apostrophe": 2,
-    "bare_contractions": 48,
+    "bare_contractions": 52,
     "starts_upper": 2,
     "ends_period": 2
   },
   "casing": {
-    "lowercase": 24,
-    "total": 28,
+    "lowercase": 25,
+    "total": 29,
     "forms": {
       "email": {
         "Email": 1,
@@ -33,7 +33,8 @@
         "readmes": 1
       },
       "repo": {
-        "repos": 1
+        "repos": 1,
+        "repo": 1
       },
       "github": {
         "github": 3
@@ -75,7 +76,7 @@
   },
   "typos": {
     "found": 20,
-    "words_per_typo": 71,
+    "words_per_typo": 72,
     "classes": {
       "swap": 10,
       "double": 7,

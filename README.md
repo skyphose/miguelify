@@ -112,7 +112,7 @@ the tools can also be run directly:
 | tool | what it does |
 |---|---|
 | `tools/voicecheck.py FILE...` | regex linter. flags em dashes, emoji, hype words, attribution, british spelling, apostrophes, bold figures, long sentences. exit 1 on findings, exit 2 on a private-string leak |
-| `tools/voicecheck.py --tracked --git` | the pre-push check. every file git tracks, plus the author, committer and message of every commit on the branch |
+| `tools/voicecheck.py --tracked --git` | the pre-push check. every file git tracks, plus the author, committer and message of every commit on the branch. anything shaped like an email, path, ip, token or credential is reported for review whether or not a leak list exists |
 | `tools/slipplan.py FILE` | proposes typo positions and candidates, refusing any that make a real word |
 | `tools/extract_voice_corpus.py` | rebuilds the corpus from your own claude code transcripts, writes `references/profile.json`, prints the typo inventory and the drift since last time |
 
@@ -132,8 +132,10 @@ i run on my own drafts before they go public, for my own reading experience.
 
 the machinery is the reusable part and the rules arent. in order:
 
-1. clone it and run `python3 tools/extract_voice_corpus.py`. it reads your own claude
-   code tarnscripts and overwrites `references/profile.json` with your counts.
+1. clone it and run `python3 tools/extract_voice_corpus.py`. it reads every user turn
+   under `~/.claude/projects`, writes a redacted copy of your tarnscripts to a gitignored
+   file, and overwrites `references/profile.json` with your counts. nothing leaves your
+   machine.
 2. read the typo inventory it prints. anything thats your vocabulary rather than a slip
    goes in `references/jargon.txt`, one word per line. that file is your words and the
    tools protect it: nothing on it gets counted as a typo, corrected, expanded or produced
@@ -152,23 +154,25 @@ a project im working on, not a finished thing. as of 2026-09-14:
 
 - **works.** the scrape with drift check, the linter with leak checking of files and git
   metadata, the slip planner with profile-driven class weights. four A/B rounds to
-  settle the rules the counts cant: 16 questions, 8 rule changes, 8 confirmations. two
-  of my own documents have been through the full pass: a model listing and this readme.
+  settle the rules the counts cant: 16 questions, 8 rule changes, 8 confirmations. three
+  of my own documents have been through the full pass: this readme, and the readme and
+  listing of a 3d model. tests cover the linter, the planner and the redactor:
+  `python3 -m unittest discover tests`.
 - **rough.** the typo inventory misses substitutions and two-edit slips, so it counts
   about a third fewer than a hand pass. the rewrite step has no tool behind it. its the
   skill's rules applied by reading, and im not convinced it should be automated.
-- **next.** run the dice-insert readme and listing through the current rules. the
-  readme has 72 findings waiting and the listing was written before rounds 1 and 3. add
-  a second corpus source, the commit messages i typed myself. write tests for the tools.
+- **next.** adopt the rewritten dice-insert readme and listing once ive read them. add a
+  second corpus source, the commit messages i typed myself.
 
 ## private overlay
 
 `references/private.md` is gitignored. it holds the strings that must never appear in a
 public repo: home paths, internal hostnames, vpn ranges, afifliations, private project
 names. `voicecheck.py` reads it and greps every file for those strings, exiting 2 if it
-finds one. with `--git` it also reads the author email and message of every commit on the
+finds one. list or no list, it also flags anything shaped like an email, a home path, an
+ip, a token or a credential as a possible leak to read before pushing. with `--git` it also reads the author email and message of every commit on the
 branch. thats where the first real leak in this repo turned up: a commit authored as
-`user@hostname.local` from a machine with no git email configured. if the file is absent
+`user@<hostname>.local` from a machine with no git email configured. if the file is absent
 the rest of the linter still works and the leak check has nothing to look for. if the
 file is ever committed the linter refuses to run at all.
 

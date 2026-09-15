@@ -1,5 +1,8 @@
-# the private overlay: hostnames, affiliations, home paths, private project paths
-references/private.md
+# the private overlay: hostnames, affiliations, home paths, private project paths.
+# any variant of the name is ignored too, so a private.bak.md cannot ship. the
+# template is tracked on purpose.
+references/private*
+!references/private.example.md
 
 # the extracted corpus is raw chat transcripts, never commit it
 voice_corpus.txt

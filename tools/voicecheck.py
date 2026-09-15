@@ -20,7 +20,12 @@ skill's own, and in commit metadata under --git. Leaks are reported separately a
 set the exit status to 2, because a leak is a publish-blocker and a hype word is
 not. The check refuses to run at all if private.md has itself been committed.
 
-Exit: 0 clean, 1 voice findings, 2 leak or a committed private.md.
+Anything shaped like an email, a home path, an IP, a token, a bearer header, a private
+key or a credential assignment is reported as a possible leak whether or not a list
+exists, and exits 1 with a "review" line. Placeholders in angle brackets, example.com
+addresses and GitHub noreply addresses are not counted.
+
+Exit: 0 clean, 1 voice findings or possible leaks, 2 listed leak or a committed private.md.
 """
 import json
 import os
@@ -101,7 +106,10 @@ PRIVATE = os.path.join(SELF_DIR, "references", "private.md")
 PROFILE = os.path.join(SELF_DIR, "references", "profile.json")
 JARGON = os.path.join(SELF_DIR, "references", "jargon.txt")
 RULEBOOK_FILES = {"SKILL.md", "LICENSE", ".gitignore"}
-RULEBOOK_DIRS = {"references", "tools", "examples"}
+RULEBOOK_DIRS = {"references", "tools", "examples", "tests"}
+# The tests plant emails, paths and keys on purpose. Listed terms are still a hard
+# block there; only the generic review tier steps aside.
+GENERIC_SKIP_DIRS = {"tests"}
 
 
 def jargon_words():
@@ -137,6 +145,24 @@ def profile_fields():
 
 # A GitHub noreply address is the public login by construction, never a leak.
 NOREPLY = re.compile(r"\S+@users\.noreply\.github\.com")
+
+# Shapes that are a leak in any repo, list or no list. These exit 1 and say "review",
+# because a README can legitimately carry an address or an IP; the private.md terms
+# are the hard block. The scraper imports the same patterns to redact the corpus.
+EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+HOMEPATH = re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+")
+IPV4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+TOKEN = re.compile(r"\b(?:sk|pk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{16,}|"
+                   r"\bAKIA[A-Z0-9]{16}\b|\bxox[baprs]-[A-Za-z0-9-]+|"
+                   r"\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}|hooks\.slack\.com/services/\S+")
+BEARER = re.compile(r"\b[Bb]earer\s+[A-Za-z0-9._-]{16,}")
+PRIVATE_KEY = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")
+CREDENTIAL = re.compile(r"\b(?:password|passwd|api[_-]?key|secret[_-]?key|client[_-]?secret)"
+                        r"\s*[:=]\s*\S", re.I)
+GENERIC = [("email", EMAIL), ("home path", HOMEPATH), ("ipv4", IPV4), ("token", TOKEN),
+           ("bearer", BEARER), ("private key", PRIVATE_KEY), ("credential", CREDENTIAL)]
+# Placeholders and documentation addresses are not leaks.
+GENERIC_OK = re.compile(r"users\.noreply\.github\.com|example\.(?:com|org|net)$|<[^>]*>")
 
 
 def long_sentences(para_lines):
@@ -234,6 +260,27 @@ def scan_leaks(lines, terms):
     return hits
 
 
+def scan_generic(lines):
+    """{shape: [line numbers]} for anything shaped like a secret or an identity."""
+    hits = {}
+    for n, line in enumerate(lines, 1):
+        for name, rx in GENERIC:
+            for m in rx.finditer(line):
+                if GENERIC_OK.search(m.group()):
+                    continue
+                hits.setdefault(name, []).append(n)
+                break
+    return hits
+
+
+def report_generic(label, hits):
+    print(f"\n{label}  possible leak - review before publishing")
+    for name, nums in sorted(hits.items()):
+        print(f"  high review    {len(nums):>3}x  looks like a {name}")
+        print(f"       {'':<9}      lines {fmt_lines(nums)}")
+    return sum(len(v) for v in hits.values())
+
+
 def private_is_tracked():
     r = subprocess.run(["git", "-C", SELF_DIR, "ls-files", "--error-unmatch",
                         "references/private.md"], capture_output=True)
@@ -312,6 +359,7 @@ def main(argv):
     fields = profile_fields()
     terms = leak_terms()
     leaked = 0
+    reviews = 0
     for path in paths:
         if is_binary(path):
             print(f"{path}: skipped, binary")
@@ -327,6 +375,10 @@ def main(argv):
             lk = scan_leaks(lines, terms)
             if lk:
                 leaked += report_leaks(path, lk)
+        rel0 = os.path.relpath(os.path.abspath(path), SELF_DIR).split(os.sep, 1)[0]
+        gn = {} if rel0 in GENERIC_SKIP_DIRS else scan_generic(lines)
+        if gn:
+            reviews += report_generic(path, gn)
 
         # The rulebook quotes the tells it bans, so those files exempt themselves.
         # Anything else, README.md included, is public copy wherever it lives.
@@ -359,16 +411,24 @@ def main(argv):
                 if lk:
                     leaked += report_leaks(label, lk)
                     bad += 1
+                # Generic shapes only on the identity lines: a machine-name email is the
+                # real risk there, and a message body quoting one as an example is not.
+                gn = scan_generic(lines[:2])
+                if gn:
+                    reviews += report_generic(label, gn)
             print(f"--git: {len(commits)} commit(s) checked, {bad} with a private string")
 
     print(f"\n{grand} hit(s) across {len(paths)} file(s).")
     if leaked:
         print(f"{leaked} private-string leak(s). Fix these before anything is pushed.")
         return 2
+    if reviews:
+        print(f"{reviews} possible leak(s): something shaped like an email, path, IP, token "
+              f"or credential. Read each one before pushing.")
     if grand:
         print("Mechanical tells only. Still check by hand: unearned claims, a missing")
         print("trade-off paragraph, a restating conclusion, numbers without units.")
-    return 1 if grand else 0
+    return 1 if (grand or reviews) else 0
 
 
 if __name__ == "__main__":

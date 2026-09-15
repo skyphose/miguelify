@@ -311,7 +311,9 @@ See `references/surfaces.md` for the full set. The short version:
 5. Before anything is pushed, run the linter over the whole repo and its history:
    `python3 ~/.claude/skills/miguelify/tools/voicecheck.py --tracked --git`
    That covers every tracked file plus the author email and message of every commit.
-   Exit 2 means a private string is still in there, in a file or in git metadata.
+   Exit 2 means a private string is still in there, in a file or in git metadata. A
+   "possible leak" line means something shaped like an email, path, IP, token or
+   credential turned up: read it, and if it is a real one, add it to `private.md`.
 6. **Show him the diff before anything is pushed, uploaded or published.** Rewriting his
    public words is his call to approve, every time. Never push, never publish, never
    post as part of this skill.

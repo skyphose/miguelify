@@ -38,7 +38,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from voicecheck import leak_terms       # noqa: E402
+from voicecheck import leak_terms, EMAIL, HOMEPATH, TOKEN, BEARER, PRIVATE_KEY  # noqa: E402
 from slipplan import load_dict, is_real, JARGON, CONTRACTIONS  # noqa: E402
 
 HOME = os.path.expanduser("~")
@@ -50,11 +50,10 @@ DROP_SUBSTR = ("tool_use_id", "Analysis:\nLet me chronologically")
 SHORT = 700  # above this, it is a pasted prompt or a summary, not typing
 MIN_MESSAGES = 20  # below this the counts are noise and the profile is left alone
 
-EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
-HOMEPATH = re.compile(r"/(?:Users|home)/[^/\s]+")
-TOKEN = re.compile(r"\b(?:sk|pk)-[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{16,}|"
-                   r"\bAKIA[A-Z0-9]{16}\b|\bxox[baprs]-[A-Za-z0-9-]+|"
-                   r"\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}")
+# The secret and identity shapes live in voicecheck.py so the linter and this redactor
+# never disagree about what a leak looks like. Credentials get their value blanked.
+CREDENTIAL_VALUE = re.compile(r"(\b(?:password|passwd|api[_-]?key|secret[_-]?key|client[_-]?secret)"
+                              r"\s*[:=]\s*)\S+", re.I)
 
 LETTERS = "abcdefghijklmnopqrstuvwxyz"
 # "double" means any extra letter, not only a doubled one. It is the class slipplan
@@ -65,9 +64,12 @@ MAX_REPEATS = 2   # a misspelling that recurs identically is a habit or jargon
 
 
 def redact(text, terms):
+    text = PRIVATE_KEY.sub("[private key]", text)
+    text = BEARER.sub("[token]", text)
+    text = TOKEN.sub("[token]", text)
+    text = CREDENTIAL_VALUE.sub(r"\1[secret]", text)
     text = EMAIL.sub("[email]", text)
     text = HOMEPATH.sub("~", text)
-    text = TOKEN.sub("[token]", text)
     for _raw, rx in terms:
         text = rx.sub("[private]", text)
     return text
