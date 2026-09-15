@@ -1,15 +1,9 @@
 # miguelify
 
-a claude code skill that takes ai-drafted text and rewrites it so it reads like i wrote
-it. its a rewrite pass over assistant output, not a generator. the facts, numbers and
-structure of the draft survive. the punctuation, the vocabulary, the register and the
-honesty rules become mine.
+a claude code skill that takes ai-drafted text and rewrites it so it reads much more naturally - partially to make it more presentable (or less presentable) but also just to use real words and easy to comprehend english
 
-i built it because my own published repos had quietly picked up a house style i never
-chose. the readme for one of my 3d models had 56 em dashes in it. ive typed zero em
-dashes across 103 hand-written messages. nobody asked for them. they just arrived, one
-draft at a time.
 
+this is the skill talkin! we talm bout some code...
 ## how it works
 
 four stages. the first and last are tools, the middle two are reading.
