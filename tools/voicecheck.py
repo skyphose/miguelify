@@ -50,12 +50,10 @@ CHECKS = [
      "British spelling: {british} in {messages} typed messages. The corpus is American."),
     ("hype",     "med",  HYPE,
      "hype word with no number behind it."),
-    ("notjust",  "med",  r"[Ii]t'?s not just .{1,40}?,? it'?s|[Mm]ore than just ",
-     "'not just X, it's Y' construction."),
     ("whether",  "med",  r"[Ww]hether you'?re (a|an|new|just|looking)",
      "'whether you're X or Y' construction."),
-    ("filler",   "med",  r"[Ii]n today'?s .{0,20}world|[Ii]n an era of|[Ii]t'?s worth noting|"
-                         r"[Aa]t the end of the day|[Ll]et'?s dive|[Ii]n conclusion",
+    ("filler",   "med",  r"[Ii]n today'?s .{0,20}world|[Ii]n an era of|"
+                         r"[Aa]t the end of the day|[Ll]et'?s dive",
      "filler opener/closer."),
     ("intro",    "med",  r"^#{0,3}\s*Introducing\b",
      "'Introducing' opener: name the thing instead."),
@@ -87,7 +85,125 @@ CHECKS += [
     ("boldnum", "low", r"\*\*[^*\n]*\d[^*\n]*\*\*",
      "bold figure: numbers are plain, with spaced units. Chosen from A/B samples."),
 ]
+
+# The patterns Wikipedia's AI-cleanup project catalogs at WP:AISIGNS
+# (Wikipedia:Signs_of_AI_writing, read 2026-11-09). references/ai-tells.md has each
+# one with its fix. These are signs of a deeper problem (a generic claim standing in
+# for a specific one), so the message says what to put back, not just what to cut.
+AI_VOCAB = (r"\bAdditionally,|\balign(?:s|ed)? with\b|\bbolster(?:s|ed|ing)?\b|\bcrucial\b|"
+            r"\bemphasiz(?:e|es|ed|ing)\b|\benduring\b|\benhanc(?:e|es|ed|ing)\b|"
+            r"\bfoster(?:s|ed|ing)?\b|\bgarner(?:s|ed|ing)?\b|"
+            r"\bhighlight(?:s|ed|ing)? (?:the|its|their|how|a|an)\b|\binterplay\b|"
+            r"\bintricat(?:e|ies)\b|\blandscape\b|\bpivotal\b|\bshowcas(?:e|es|ed|ing)\b|"
+            r"\btapestry\b|\bunderscor(?:e|es|ed|ing)\b|\bvaluable\b|\bvibrant\b|"
+            r"\bnestled\b|\bin the heart of\b|\bgroundbreaking\b|\brenowned\b|"
+            r"\bdiverse array\b|\bcommitment to\b|\bexemplif(?:y|ies|ied)\b|\bprofound\b|"
+            r"\bmultifaceted\b|\bquietly\b|\buniversally\b|\bdependable\b|\bboasts?\b")
+
+CHECKS += [
+    ("aivocab", "med", AI_VOCAB,
+     "ai vocabulary (WP:AIWORDS). one is a coincidence, several is the strongest tell "
+     "there is. say the plain thing: has, is, shows, important, or the number."),
+    ("legacy", "med",
+     r"\b(?:stands|serves) as (?:a|an) (?:testament|reminder|symbol)|\btestament to\b|"
+     r"\b(?:pivotal|crucial|vital|key|significant|important) (?:role|moment|turning point)\b|"
+     r"\bplays? an? (?:\w+ )?role in\b|\breflects? (?:a |the )?broader\b|\bsetting the stage\b|"
+     r"\bmark(?:s|ed|ing) a (?:\w+ )?(?:shift|turning point|milestone)\b|\bevolving landscape\b|"
+     r"\bindelible mark\b|\bdeeply rooted\b|\b(?:enduring|lasting) (?:legacy|impact|influence)\b|"
+     r"\bfocal point\b|\bcontribut(?:es|ed|ing) to the broader\b",
+     "puffed-up significance (WP:AILEGACY). nobody asked what it symbolizes. cut it, or "
+     "replace it with what the thing actually does, with a number."),
+    ("ingtail", "med",
+     r", (?:highlighting|underscoring|emphasizing|reflecting|showcasing|symbolizing|ensuring|"
+     r"fostering|cultivating|contributing to|enhancing|demonstrating|solidifying|"
+     r"embodying|reinforcing|signaling)\b",
+     "trailing '-ing' analysis (WP:SUPERFICIAL): a clause tacked on to say why a fact "
+     "matters. end the sentence at the fact."),
+    ("copula", "low",
+     r"\b(?:serves|stands|functions|operates|acts) as (?:a|an|the)\b|"
+     r"\b(?:features|offers) (?:a|an|two|three|four|five|several|multiple|\d)\b|\brefers to the\b",
+     "'serves as' / 'features a' for is / has (WP:AINOCOPULA). say 'is' and 'has'."),
+    ("negpar", "med",
+     r"(?i)\bnot only\b[^.]{0,80}\bbut\b|\bnot just\b|\bmore than just\b|"
+     r"\b(?:it'?s|its|is|isn'?t|this is|that'?s|thats) not (?:a|an|about|merely|simply)\b"
+     r"[^.]{0,60}[,;]\s*(?:but|it'?s|its|it is)\b|"
+     r"\bno [^,.]{1,30}, no [^,.]{1,30}, (?:just|only)\b",
+     "negative parallelism, 'not X, but Y' (WP:AIPARALLEL). nobody said it was X. "
+     "say what it is."),
+    ("ratherthan", "low", r"\b[Rr]ather than\b",
+     "'Y rather than X' (WP:AIPARALLEL), the 2026 form of the same move. fine once for a "
+     "real choice between two options, a tell as a habit."),
+    ("vague", "med",
+     r"\b(?:[Mm]any|[Ss]ome|[Mm]ost|[Ss]everal) (?:users|people|players|makers|reviewers|"
+     r"critics|experts|observers|developers|commenters|printers)\b (?:report|say|find|note|"
+     r"agree|argue|have|praise|describe)|\b[Ee]xperts (?:say|argue|agree|note|suggest)\b|"
+     r"\b[Oo]bservers have\b|\b[Ii]ndustry reports\b|\bwidely (?:regarded|considered|praised|"
+     r"seen|recognized)\b",
+     "vague attribution (WP:AIWEASEL). who, how many, and where. name them or cut it."),
+    ("connect", "low",
+     r"\b(?:is|are|was|were|became|been|be|being) (?:closely |widely |often )?associated with\b|"
+     r"\bin connection with\b|\bin association with\b",
+     "'associated with' instead of the actual relationship (WP:AICONNECT). made it, "
+     "uses it, runs it: say which."),
+    ("disclaim", "med",
+     r"\b[Ii]t'?s (?:important|worth|crucial) (?:to )?(?:note|noting|remember|mention)|"
+     r"\b[Ii]t is (?:important|worth|crucial) to (?:note|remember|mention)|"
+     r"\b[Bb]ased on (?:the )?available information\b|"
+     r"\bnot (?:widely|publicly|extensively|well) (?:documented|available|disclosed|known)\b|"
+     r"\b(?:limited|scarce) in (?:the )?(?:provided|available)\b|"
+     r"\bshould be (?:treated|read|seen|understood|viewed|taken) as\b|"
+     r"\bdoes not (?:by itself |on its own )?establish\b|\bshould not be confused with\b",
+     "hedging disclaimer (WP:AIDISCLAIMER). the honest version is first person and "
+     "specific: 'untested at this size. i printed v1.0, not this one.'"),
+    ("notability", "med",
+     r"\b(?:featured|profiled|covered|mentioned|highlighted) (?:in|by) (?:several|multiple|"
+     r"many|numerous|various|leading|prominent|major)\b|\bactive (?:social media|online) "
+     r"presence\b|\bindependent coverage\b|\b(?:media|news|hobby|industry) outlets\b|"
+     r"\btrade publications\b|\bidentifies (?:him|her|them|it) as\b",
+     "canned notability (WP:AIATTR). link the one source that matters, or leave it out."),
+    ("challenges", "med",
+     r"\b[Dd]espite (?:its|their|these|this|the|his|her) [^.]{0,40}\bchallenges\b|"
+     r"\bfaces? (?:several|many|numerous|some|new|significant|a number of) challenges\b|"
+     r"\b[Ff]uture (?:outlook|prospects|directions)\b|"
+     r"\b[Cc]hallenges and (?:future|opportunities|legacy|limitations)\b|"
+     r"\bcontinues? to (?:thrive|evolve|grow)\b",
+     "'despite these challenges' formula (WP:FACESCHALLENGES). list the actual limits "
+     "with numbers, and stop. no upbeat closer."),
+    ("summary", "med",
+     r"(?:^|[.!?]\s+)(?:[Oo]verall|[Ii]n summary|[Ii]n conclusion|[Tt]o sum up|"
+     r"[Uu]ltimately|[Ii]n short|[Aa]ll in all),",
+     "restating conclusion (WP:CONCLUSION). the reader just read it. end on the last "
+     "real fact."),
+    ("chatbot", "high",
+     r"\b[Ii] hope (?:this|that) helps\b|\b[Ll]et me know (?:if|whether)\b|"
+     r"\b[Ww]ould you like\b|\b(?:Certainly|Of course|Absolutely|Great question)[!.,]|"
+     r"\b[Yy]ou'?re (?:absolutely )?right\b|\b[Hh]ere'?s (?:a|an|the) (?:revised|updated|"
+     r"rewritten|polished|more detailed|detailed|breakdown|summary|draft)\b|"
+     r"\b[Ff]eel free to\b|\b[Hh]appy to help\b|\bmore detailed breakdown\b",
+     "chat aimed at the user left in the text (WP:COLLABCOMM). cut it."),
+    ("placeholder", "high",
+     r"\[(?:[Ii]nsert|[Yy]our|[Aa]dd|[Dd]escribe|[Ee]nter|[Pp]laceholder|TODO|TBD|"
+     r"[Ll]ink|URL|[Dd]ate)\b[^\]]*\](?!\()|\b(?:YYYY-MM-DD|example\.com/your)",
+     "unfilled template placeholder (WP:AIPLACEHOLDER)."),
+    ("curly", "low", r"[“”‘’]",
+     "curly quote or apostrophe (WP:AICURLY). straight quotes, and contractions have no "
+     "apostrophe anyway."),
+    ("andhead", "low", r"^#{1,6} [^#\n]*\b(?:and|&) (?:recognition|legacy|impact|future|"
+     r"challenges|awards|limitations|considerations|benefits|outlook)\b",
+     "'X and Y' heading (WP:AISIGNS, 'Awards and recognition'). one heading, one thing, "
+     "lowercase, often a question."),
+]
+
 LONG_SENTENCE = 30   # words. Chosen register is short sentences and fragments.
+
+# Rhythm. Since mid-2026 the newest models drop em dashes entirely and hold every
+# sentence to roughly 8-20 words with only commas and periods (WP:AIWORDS, GPT-6 era;
+# WP:AIDASH). "Short sentences, no em dash" is miguelify's own rule, so followed too
+# literally it produces exactly that. His typing is bursty: median 11, a fifth of
+# sentences 5 words or fewer, the 90th percentile at 25. Flag prose that is too even.
+RHYTHM_MIN_SENTENCES = 12
+RHYTHM_MIN_CV = 0.40      # stdev / mean of sentence length
+RHYTHM_MAX_BAND = 0.75    # share of sentences between 8 and 20 words
 
 # Capitalized forms of the vocabulary in jargon.txt: github, openscad, stl, mtg. The
 # corpus types them lowercase, so published prose does too. Checked outside CHECKS
@@ -165,12 +281,31 @@ GENERIC = [("email", EMAIL), ("home path", HOMEPATH), ("ipv4", IPV4), ("token", 
 GENERIC_OK = re.compile(r"users\.noreply\.github\.com|example\.(?:com|org|net)$|<[^>]*>")
 
 
-def long_sentences(para_lines):
-    """Sentences over LONG_SENTENCE words in one paragraph, as (first line, count)."""
+def sentence_lengths(para_lines):
+    """Word count of every sentence in one paragraph."""
     if not para_lines:
-        return 0
+        return []
     text = " ".join(INLINE_CODE.sub(" ", t) for _, t in para_lines)
-    return sum(1 for s in re.split(r"[.!?]+\s", text) if len(s.split()) > LONG_SENTENCE)
+    text = re.sub(r"^\s*(?:[-*+]|\d+\.)\s+", "", text)
+    return [len(s.split()) for s in re.split(r"[.!?]+(?:\s|$)", text) if s.split()]
+
+
+def long_sentences(para_lines):
+    """How many sentences in one paragraph run over LONG_SENTENCE words."""
+    return sum(1 for n in sentence_lengths(para_lines) if n > LONG_SENTENCE)
+
+
+def rhythm(lengths):
+    """(cv, band share) when the prose is too even to read as typed, else None."""
+    if len(lengths) < RHYTHM_MIN_SENTENCES:
+        return None
+    mean = sum(lengths) / len(lengths)
+    sd = (sum((n - mean) ** 2 for n in lengths) / len(lengths)) ** 0.5
+    cv = sd / mean if mean else 0
+    band = sum(1 for n in lengths if 8 <= n <= 20) / len(lengths)
+    if cv < RHYTHM_MIN_CV or band > RHYTHM_MAX_BAND:
+        return cv, band
+    return None
 
 
 def scan(lines):
@@ -178,8 +313,10 @@ def scan(lines):
     found = {}
     in_fence = False
     para = []   # (line number, text) of the paragraph being read
+    lengths = []
 
     def flush():
+        lengths.extend(sentence_lengths(para))
         n_long = long_sentences(para)
         if n_long:
             rec = found.setdefault("longsentence", ["low",
@@ -218,6 +355,14 @@ def scan(lines):
                 rec[2].append(n)
                 rec[3] += caps
     flush()
+    even = rhythm(lengths)
+    if even:
+        cv, band = even
+        found["rhythm"] = ["low",
+            f"even rhythm: {len(lengths)} sentences, spread {cv:.2f} (want {RHYTHM_MIN_CV}+), "
+            f"{band:.0%} of them 8-20 words (want under {RHYTHM_MAX_BAND:.0%}). the newest "
+            "models write exactly this. mix in fragments and the odd longer sentence with "
+            "a colon or a ' - '.", [1], 1]
     return found
 
 

@@ -103,6 +103,59 @@ class VoiceChecks(unittest.TestCase):
             with self.subTest(cid):
                 self.assertIn(cid, found_ids([text]))
 
+    def test_each_wikipedia_sign_fires(self):
+        # One planted line per WP:AISIGNS pattern. See references/ai-tells.md.
+        cases = {
+            "aivocab": "a pivotal tray in a vibrant hobby",
+            "legacy": "the tray stands as a testament to careful design",
+            "ingtail": "it holds 12 dice, highlighting the attention to detail",
+            "copula": "the tray serves as a dice holder and features a coin well",
+            "negpar": "It's not a gimmick, but a real upgrade",
+            "ratherthan": "it sits beside the deck rather than replacing it",
+            "vague": "many users report that it fits",
+            "connect": "the model is associated with the tabletop community",
+            "disclaim": "the fit should be treated as approximate",
+            "notability": "it was featured in several hobby outlets",
+            "challenges": "despite these challenges, it continues to thrive",
+            "summary": "Overall, it is a good insert.",
+            "chatbot": "I hope this helps! Let me know if you want more.",
+            "placeholder": "print at [insert layer height] with pla",
+            "curly": "“measure first”",
+            "andhead": "## awards and recognition",
+        }
+        for cid, text in cases.items():
+            with self.subTest(cid):
+                self.assertIn(cid, found_ids([text]))
+
+    def test_his_own_sentences_stay_clean_of_the_new_checks(self):
+        # Shipped or A/B-picked lines in his voice. None of the WP:AISIGNS checks may
+        # fire on these, or the linter starts arguing with him.
+        new = {"aivocab", "legacy", "ingtail", "copula", "negpar", "vague", "connect",
+               "disclaim", "notability", "challenges", "summary", "chatbot",
+               "placeholder", "curly", "andhead", "rhythm"}
+        lines = [
+            "this was wrong for a long time. worth recording.",
+            "the slab takes 18.6 mm of the 67.5 mm interior, about a quarter.",
+            "if you fill a deck box to the brim, this isnt for you.",
+            "untested at this size. i printed v1.0 at 66 x 88, not this one. measure first.",
+            "it was always slightly a lie - nothing in either is game-specific.",
+            "what: slab 67 x 91 mm, two variants (coin, no coin) replacing three layouts.",
+            "## will it fit my box?",
+            "see [the listing](https://www.printables.com/model/1) for photos",
+        ]
+        self.assertEqual(found_ids(lines) & new, set())
+
+    def test_rhythm_flags_even_prose_only(self):
+        even = ["the slab is about this many words long, give or take one or two."] * 14
+        self.assertIn("rhythm", found_ids(even))
+        bursty = []
+        for i in range(7):
+            bursty += ["measure first.",
+                       "the slab takes 18.6 mm of the 67.5 mm interior, which is about a "
+                       "quarter of the box, and that is the whole cost of the thing."]
+        self.assertNotIn("rhythm", found_ids(bursty))
+        self.assertNotIn("rhythm", found_ids(["short.", "also short."]))
+
     def test_inline_code_is_a_literal(self):
         self.assertEqual(found_ids(["the `OpenSCAD — repository` file"]), set())
 

@@ -39,6 +39,26 @@ get the pass, and he knows which ones those are.
 The one thing that applies with or without this skill is non-negotiable 3, no Claude
 attribution. That is a standing preference recorded in memory, not a rule of this skill.
 
+## What actually gives it away
+
+Wikipedia's AI cleanup project keeps the most thorough public list of AI tells
+([WP:AISIGNS](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)), and its main
+warning applies here: the tells are symptoms. A model drifts toward the most likely
+sentence, so a specific fact gets replaced by a generic, important-sounding one. The text
+gets vaguer and louder at once. Scrubbing the words while leaving the vagueness just
+hides it.
+
+So **the first pass is content**. Every sentence that would still be true of some other
+project either gets its specific fact back (the number, the measurement, what was or
+wasnt tested, what it costs) or gets cut. Most of the patterns in "AI tells" below are
+what a model writes when it has no specific fact to hand, and they go away with this
+pass. `references/ai-tells.md` has the full catalog, each pattern mapped to its fix in
+his voice.
+
+The same page lists things that are NOT reliable tells: perfect grammar, mixing casual
+and technical register, and transition words on their own. So the deliberate slips
+below are his preference, not cover. They do nothing for text that is still generic.
+
 The rules below are measured, not guessed. They come from 103 hand-typed messages in
 `~/.claude/projects/**/*.jsonl` (90 when first measured on 2026-09-04, rescraped
 2026-09-14 with every count holding) plus the repo text he has actually shipped
@@ -100,6 +120,11 @@ section the shipped LISTING.md carries. Say what was done, what was not, and the
 the reader can run. When in doubt, downgrade the claim and state the gap in the text
 itself.
 
+This is the opposite of an AI disclaimer, and the two are easy to confuse. A model hedges
+in the third person and in general: "the fit should be treated as approximate rather
+than guaranteed", "this does not by itself establish compatibility". He says what he did
+and did not do, in the first person, with the number.
+
 **Own the mistakes plainly.** On his own earlier naming scheme: "it was always slightly
 a lie - nothing in either is game-specific, and people picked the wrong one." No
 defensiveness, no burying it in a changelog.
@@ -117,6 +142,14 @@ sentence, with a colon, only when a trade-off genuinely needs unpacking, and nev
 30 words. Chosen from A/B samples on 2026-09-14 over plain declaratives and over his chat
 register ("honestly", "basically", "just"), which he did not want carried over. Tables for
 anything with variants or specs, confirmed by A/B on 2026-09-14 over prose and bullets.
+
+**Short is not the same as even.** The newest models (late 2026) drop em dashes entirely
+and hold every sentence to roughly 8-20 words with nothing but commas and periods. That
+is now its own tell, and "no em dash, no semicolon, short sentences" followed literally
+produces it. His typing is bursty: a fifth of his sentences are 5 words or fewer and the
+90th percentile is 25. So mix fragments with the occasional longer sentence, and use
+the punctuation he does type: the spaced hyphen for an aside, a colon before a number or
+a trade-off, a plain question. The linter's `rhythm` check flags prose that is too even.
 
 **Lowercase, all of it.** He starts 101 of 103 messages lowercase and it is his normal
 register. Names and acronyms are lowercase too: github, makerworld, pokemon (no accent),
@@ -239,20 +272,60 @@ class per site from the weights in `references/profile.json`, and refuses any ca
 that is a real word or a word in `references/jargon.txt`. Doing it by hand produces predictable placements and
 suspiciously cute typos.
 
-## Banned constructions
+## AI tells
 
-Cut on sight. These are the tells that mark text as machine-written.
+From WP:AISIGNS plus the original list. `references/ai-tells.md` has each one with an
+example and the fix; the linter id is in brackets where one exists.
 
-- delve, leverage, robust, seamless, elevate, unlock, harness, empower, streamline,
-  effortless, comprehensive, cutting-edge, game-changer, powerhouse, dive in
-- "In today's world", "In an era of", "It's worth noting that", "At the end of the day"
-- "It's not just X, it's Y" and "More than just X"
-- "Whether you're a X or a Y"
-- Three-item triads used for rhythm rather than because there are exactly three things
-- A closing paragraph that restates what the document just said
-- Every bullet opening with a bolded `**Word:**` label. Fine occasionally, not as the
-  house format for a whole list.
-- Hype adjectives with no number behind them: powerful, blazing, incredibly, perfect
+**Significance nobody asked for.**
+- Legacy and broader-trend talk: "stands as a testament", "plays a pivotal role", "marks
+  a shift", "reflects broader". A dice tray does not have a legacy. (`legacy`)
+- A fact followed by ", highlighting / underscoring / reflecting / ensuring ...". End
+  the sentence at the fact. (`ingtail`)
+- "featured in several outlets", "active social media presence". Name the one source or
+  cut it. (`notability`)
+- "Despite its strengths, it faces challenges ... continues to thrive." The limits as
+  numbers, then stop. (`challenges`)
+
+**Vagueness dressed as precision.**
+- "many users report", "experts argue", "widely regarded". Who, how many, where.
+  (`vague`)
+- "associated with", "in connection with". Say the relationship: made, uses, forked
+  from. (`connect`)
+- One thing called four names across a document: the insert, the tray, the accessory,
+  the solution. Pick one and keep it. (by hand)
+
+**Sentence shapes.**
+- "serves as", "stands as", "boasts", "features a" for is and has. (`copula`)
+- "not just X, its Y", "not only ... but", "no X, no Y, just Z". Nobody said it was X.
+  (`negpar`)
+- "Y rather than X" as a habit, the 2026 version of the same move. Fine once for a real
+  choice. (`ratherthan`)
+- Triads for rhythm rather than because there are exactly three things. (by hand)
+- "Whether you're a X or a Y", "In today's world", "At the end of the day". (`whether`,
+  `filler`)
+
+**Words.** The era lists are in `references/ai-tells.md`. The distinctive ones: delve,
+pivotal, crucial, vibrant, tapestry, testament, underscore, showcase, foster, enhance,
+intricate, landscape, boasts, "Additionally," at the start of a sentence, and the 2026
+set: quietly, multifaceted, universally, dependable. Plus the older hype list: leverage,
+robust, seamless, elevate, unlock, harness, empower, streamline, effortless,
+comprehensive, cutting-edge, game-changer, powerhouse. One is chance. Several is the
+strongest tell there is. (`aivocab`, `hype`)
+
+**Hedges and leftovers.**
+- "it's important to note", "not widely documented", "based on available information",
+  "should be treated as X rather than Y", "does not by itself establish". The honest
+  version is his, first person and specific: "untested at this size." (`disclaim`)
+- "Overall,", "In summary,", or a closing paragraph that restates the document.
+  (`summary`)
+- "I hope this helps", "Let me know if", "Here's a revised version". (`chatbot`)
+- "[insert print settings]" and other unfilled blanks. (`placeholder`)
+
+**Formatting.** Curly quotes (`curly`), "X and Y" headings like "Awards and recognition"
+(`andhead`), Title Case (`titlecase`), bold scattered through prose (`boldnum`), every
+bullet opening with a bold `**Word:**` label (`labelbul`), hype adjectives with no number
+behind them.
 
 ## What NOT to carry over from his chat register
 
@@ -297,13 +370,20 @@ See `references/surfaces.md` for the full set. The short version:
 
 1. Read the whole target file first. Never rewrite from a summary of it.
 2. Run the linter: `python3 ~/.claude/skills/miguelify/tools/voicecheck.py <file>...`
-   It is a regex pass, so it catches the mechanical tells (em dashes, emoji, banned
-   words, attribution) and nothing else. It is a floor, not a passing grade.
+   It is a regex pass, so it catches the mechanical tells (em dashes, emoji, AI
+   vocabulary, the WP:AISIGNS sentence shapes, attribution, even rhythm) and nothing
+   else. It is a floor, not a passing grade.
    It also greps for the private strings listed in `references/private.md` and exits 2
    if it finds one. That check is a publish-blocker: fix the leak, do not argue with it.
-3. Rewrite by hand against "The voice" above. The judgment calls - the honesty
-   downgrade, the who-it-is-not-for paragraph, cutting a restating conclusion - are the
-   ones that matter and the linter cannot see them.
+3. Content pass, before any wording. Go sentence by sentence and ask: would this still
+   be true of some other project? If yes, put the specific fact back or cut the
+   sentence. Check every claim against what was actually done, and every source the
+   draft mentions against what it actually says. Do not invent a figure to fill a gap:
+   say there is no figure.
+3b. Rewrite by hand against "The voice" above. The judgment calls - the honesty
+   downgrade, the who-it-is-not-for paragraph, cutting a restating conclusion, one name
+   per thing all the way through - are the ones that matter and the linter cannot see
+   them.
 4. Re-run the linter until clean.
 4b. Only once the rewrite is settled, run
    `python3 ~/.claude/skills/miguelify/tools/slipplan.py <file>` and place the slips

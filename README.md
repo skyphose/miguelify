@@ -17,8 +17,13 @@ four stages. the first and last are tools, the middle two are reading.
    feeling.
 2. **lint.** `tools/voicecheck.py` is a regex pass over the mechanical tells: em dashes,
    emoji, hype words, ai attribution, british spelling, apostrophes in contractions, bold
-   figures, long sentences. its messages quote the profile's numbers. it also greps for a
-   list of private strings. a file or a commit with one in it doesnt pass.
+   figures, long sentences. it also checks the patterns from wikipedias
+   [signs of ai writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
+   page: ai vocabulary, "serves as" for is, "not X but Y", trailing "-ing" analysis,
+   vague attributions, hedging disclaimers. also chat left over from the draft, and
+   prose where every sentence is the same length. its messages quote the profile's
+   numbers. it also greps for a list of private strings. a file or a commit with one in
+   it doesnt pass.
 3. **rewrite.** `SKILL.md`, applied by reading. open on the thing itself, put a number
    with a unit on every claim, hand the reader a test they can run, say who it isnt for.
    `examples/coin-well.md` shows one section of a real readme before and after, and what

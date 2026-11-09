@@ -255,6 +255,29 @@ Textspeak is nearly absent: "rn" 1, "ok" 7, and nothing from the rest of the usu
 (tbh, imo, idk, lol, btw, kinda, gonna). Plain lowercase words is the register, not
 abbreviation.
 
+## AI-tell pass (2026-11-09)
+
+Checked the rules against Wikipedia's "Signs of AI writing" field guide, read in full.
+`references/ai-tells.md` has the mapping. Three findings changed SKILL.md:
+
+- The guide says surface fixes alone just hide AI text, because the real problem is
+  generic content standing in for specific facts. The workflow now starts with a
+  content pass before any rewording.
+- The original banned list covered about a fifth of the patterns the guide documents.
+  The linter gained 16 checks: aivocab, legacy, ingtail, copula, negpar, ratherthan,
+  vague, connect, disclaim, notability, challenges, summary, chatbot, placeholder,
+  curly, andhead. The old notjust check folded into negpar.
+- Models from late 2026 drop em dashes entirely and hold sentences to about 8-20 words
+  with only commas and periods. "No em dash, no semicolon, short sentences" followed
+  literally produces that. His sentence lengths are bursty (a fifth at 5 words or fewer,
+  90th percentile 25), so SKILL.md now says to vary length and use the spaced hyphen,
+  colon and question mark he does type. The new rhythm check flags prose with a
+  length spread under 0.40 or more than 75% of sentences between 8 and 20 words. His
+  README passes it.
+
+No A/B decision was reversed. The guide also lists perfect grammar and mixed register as
+unreliable signs, so the deliberate slips stay as his preference, not as cover.
+
 ## A note on this file
 
 The reference files under `references/` are internal documentation, not public copy, so
