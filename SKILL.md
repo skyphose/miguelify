@@ -216,8 +216,9 @@ replaces, expands or capitalizes a word on that list.
 
 ## Deliberate slips
 
-Flawless prose is itself a tell, and Miguel asked for some typos to survive into public
-text. The reason is his own reading experience, not how anyone else perceives it, so the
+Miguel asked for some typos to survive into public text. Not as cover: WP:AISIGNS lists
+perfect grammar as an unreliable sign, so a typo hides nothing. The reason is his own
+reading experience, not how anyone else perceives it, so the
 governing test is narrow:
 
 > **A slip is acceptable only if it costs nothing to read.** If it would make him stop,

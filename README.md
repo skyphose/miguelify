@@ -15,15 +15,15 @@ four stages. the first and last are tools, the middle two are reading.
    writes the numbers to `references/profile.json` and prints the drift since the last
    run. that file is tracked, so every rule can point at a measurement instead of a
    feeling.
-2. **lint.** `tools/voicecheck.py` is a regex pass over the mechanical tells: em dashes,
-   emoji, hype words, ai attribution, british spelling, apostrophes in contractions, bold
-   figures, long sentences. it also checks the patterns from wikipedias
+2. **lint.** `tools/voicecheck.py` is a regex pass over the mechanical tells. the old
+   set: em dashes, emoji, hype words, ai attribution, british spelling, apostrophes in
+   contractions, bold figures, long sentences. the new set comes from wikipedias
    [signs of ai writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
-   page: ai vocabulary, "serves as" for is, "not X but Y", trailing "-ing" analysis,
-   vague attributions, hedging disclaimers. also chat left over from the draft, and
-   prose where every sentence is the same length. its messages quote the profile's
-   numbers. it also greps for a list of private strings. a file or a commit with one in
-   it doesnt pass.
+   page. ai vocabulary, "serves as" for is, "not X but Y", trailing "-ing" analysis,
+   vague attributions, hedging disclaimers, chat left over from the draft. plus one
+   rhythm check, for prose where every sentence is the same length. its messages quote
+   the profile's numbers. it also greps for a list of private strings - a file or a
+   commit with one in it doesnt pass.
 3. **rewrite.** `SKILL.md`, applied by reading. open on the thing itself, put a number
    with a unit on every claim, hand the reader a test they can run, say who it isnt for.
    `examples/coin-well.md` shows one section of a real readme before and after, and what
@@ -33,13 +33,13 @@ four stages. the first and last are tools, the middle two are reading.
 
 ## what it actually changes
 
-the rules are measured, not guessed. they come from two corpora: 103 messages i typed by
+the rules are measured, not guessed. they come from two corpora: 108 messages i typed by
 hand, and the repo text ive actually shipped and corrected. `references/voice.md` has the
 counts and the quotes behind every rule.
 
 four of them are absolutes, because the measured count was zero:
 
-1. no em dashes. i write a spaced hyphen ` - `. 25 uses in the corpus, 0 em dashes.
+1. no em dashes. i write a spaced hyphen ` - `. 26 uses in the corpus, 0 em dashes.
 2. no emoji. zero in everything ive typed or published.
 3. no ai attribution in public repos. no co-authored-by trailer, no generated-with footer.
 4. american spelling. "license", "color", "millimeter". the british forms leaked in from
@@ -49,11 +49,17 @@ three more came out of A/B rounds. i get three variants of a real paragraph, i p
 the pick becomes the rule:
 
 - contractions as i type them, with no apostrophe. dont, isnt, youre, lets. the corpus
-  has 48 of those and 2 apostrophes.
+  has 52 of those and 2 apostrophes.
 - plain numbers. 67 x 91 x 18.6 mm, spaced units, no bold. zero bold anywhere in my
   typing.
 - short sentences. fragments allowed. my median sentence is 11 words and a fifth of them
-  are 5 words or fewer.
+  are 5 words or fewer. short isnt the same as even though: the newest models write every
+  sentence at 8-20 words with only commas and periods, and the linter flags that too.
+
+the first pass isnt about words at all. wikipedias ai cleanup project makes the point
+that the tells are symptoms. a model swaps a specific fact for a generic, important
+sounding one, and scrubbing the words off just hides it. so every sentence that would
+still be true of some other project gets its number back or gets cut.
 
 past that it enforces the things that are harder to count. open on the thing itself, no
 throat-clearing. put real numbers with units on every claim. hand the reader a test they
@@ -68,14 +74,15 @@ glossed or capitalized on the way out.
 
 ## the typos are on purpose
 
-flawless prose is itself a tell. so the skill places deliberate typos at a rate of one per
-200-400 words. the three classes are the ones i actually produce: transposed adjacent
-letters, an extra letter, a dropped letter.
+i like a few typos left in, so the skill places them at a rate of one per 200-400 words.
+theyre not cover. wikipedia lists perfect grammar as a weak sign of ai, and a typo does
+nothing for a sentence that says nothing. the three classes are the ones i actually
+produce: transposed adjacent letters, an extra letter, a dropped letter.
 
 one hard rule governs all of it. a slip is allowed only if it costs nothing to read.
 `coonsequences` is fine, your eye fixes it before you notice. `form` for `from` isnt,
 because a real word gets accepted silently and the sentence has to be read twice. across
-1,398 words of my typing the scraper finds 19 typos, one per 74 words. a hand pass finds a
+1,446 words of my typing the scraper finds 20 typos, one per 72 words. a hand pass finds a
 few more it cant see. zero of them are wrong-word errors, so the rule matches how i
 actually mistype.
 
@@ -110,7 +117,7 @@ the tools can also be run directly:
 
 | tool | what it does |
 |---|---|
-| `tools/voicecheck.py FILE...` | regex linter. flags em dashes, emoji, hype words, attribution, british spelling, apostrophes, bold figures, long sentences. exit 1 on findings, exit 2 on a private-string leak |
+| `tools/voicecheck.py FILE...` | regex linter. flags em dashes, emoji, hype words, attribution, british spelling, apostrophes, bold figures, long sentences, the wikipedia ai-writing patterns and even rhythm. exit 1 on findings, exit 2 on a private-string leak |
 | `tools/voicecheck.py --tracked --git` | the pre-push check. every file git tracks, plus the author, committer and message of every commit on the branch. anything shaped like an email, path, ip, token or credential is reported for review whether or not a leak list exists |
 | `tools/slipplan.py FILE` | proposes typo positions and candidates, refusing any that make a real word |
 | `tools/extract_voice_corpus.py` | rebuilds the corpus from your own claude code transcripts, writes `references/profile.json`, prints the typo inventory and the drift since last time |
@@ -149,13 +156,15 @@ the machinery is the reusable part and the rules arent. in order:
 
 ## status
 
-a project im working on, not a finished thing. as of 2026-09-14:
+a project im working on, not a finished thing. as of 2026-11-09:
 
 - **works.** the scrape with drift check, the linter with leak checking of files and git
   metadata, the slip planner with profile-driven class weights. four A/B rounds to
   settle the rules the counts cant: 16 questions, 8 rule changes, 8 confirmations. three
   of my own documents have been through the full pass: this readme, and the readme and
-  listing of a 3d model. tests cover the linter, the planner and the redactor:
+  listing of a 3d model. the ai-tell pass against wikipedias list landed 2026-11-09:
+  16 new linter checks, a rhythm check, and a content pass before any rewording. tests
+  cover the linter, the planner and the redactor:
   `python3 -m unittest discover tests`.
 - **rough.** the typo inventory misses substitutions and two-edit slips, so it counts
   about a third fewer than a hand pass. the rewrite step has no tool behind it. its the
