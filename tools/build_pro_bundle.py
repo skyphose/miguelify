@@ -17,6 +17,7 @@ NAME = "miguelify-pro"
 FILES = [
     ("pro/SKILL.md", "SKILL.md"),
     ("tools/voicecheck.py", "tools/voicecheck.py"),
+    ("tools/slipplan.py", "tools/slipplan.py"),   # its word-list helpers back --pro spelling
     ("references/ai-tells.md", "references/ai-tells.md"),
     ("references/voice.md", "references/voice.md"),
     ("references/surfaces.md", "references/surfaces.md"),

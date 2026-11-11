@@ -200,7 +200,12 @@ CHECKS += [
 # but standard capitalization, apostrophes in contractions and no deliberate slips.
 # These checks are personal-register rules, so pro mode drops them.
 PRO_SKIP = {"apostrophe", "uncontracted", "namecaps"}
+# An en dash is correct between two numbers (6–8 pm). Anywhere else it is a dash.
+PRO_PATTERNS = {"emdash": r"—|(?<!\d)–|–(?!\d)"}
 PRO_MESSAGES = {
+    "emdash": "em dash, or an en dash outside a number range: use a comma, colon, "
+              "parentheses or two sentences.",
+    "bang": "exclamation mark: at most one per post, where a person would say it that way.",
     "titlecase": "Title Case heading: use sentence case. Title Case is a WP:AISIGNS formatting tell.",
     "curly": "curly quote or apostrophe (WP:AICURLY): use straight quotes.",
 }
@@ -225,8 +230,50 @@ PRO_CHECKS = [
      "post-template hook or engagement bait: open on what was made or found, end on the "
      "last real fact or the link."),
     ("hashtags", "low", r"(?:#\w+\s*){4,}",
-     "a wall of hashtags: zero to three, at the end, in plain words."),
+     "a wall of hashtags: zero to three, at the end, in CamelCase (#3DPrinting)."),
+    ("spacedhyphen", "med", r"\S - \S",
+     "spaced hyphen ' - ': a keyboard habit, not punctuation. use a comma, colon, "
+     "parentheses or two sentences, or an en dash in a number range."),
 ]
+
+# Words newer than /usr/share/dict/words that should not read as misspellings.
+PRO_WORDS = {"online", "email", "emails", "website", "websites", "app", "apps", "okay",
+             "signup", "workshop", "workshops", "livestream", "resume", "resumes",
+             "hackathon", "hackathons", "headshot", "headshots", "login", "username",
+             "smartphone", "laptop", "laptops", "wifi", "linkedin", "instagram",
+             "facebook", "github", "inbox", "podcast", "startup", "startups",
+             "dropdown", "checkbox", "handout", "handouts", "website's", "parametric",
+             "printable", "printables", "cad", "dice", "pla", "petg", "slicer", "box", "boxes",
+             "bio", "bios", "snacks", "has", "pm", "am",
+             "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "sept", "oct", "nov", "dec"}
+CONTRACTION_TAIL = re.compile(r"(?:n't|'s|'re|'ve|'ll|'d|'m)$")
+URLISH = re.compile(r"\S+://\S+|www\.\S+|\S+\.(?:com|org|net|edu|io)\S*|#\w+|@\w+")
+_DICT = None
+
+
+def misspellings(prose):
+    """Lowercase prose words that are not in the system word list or jargon.txt."""
+    global _DICT
+    if _DICT is None:
+        try:
+            from slipplan import load_dict, is_real
+            words = load_dict()
+            _DICT = (words, is_real) if words else False
+        except Exception:
+            _DICT = False
+    if not _DICT:
+        return []
+    words, is_real = _DICT
+    text = URLISH.sub(" ", prose.replace("’", "'"))
+    out = []
+    for w in re.findall(r"\b[a-z][a-z']*[a-z]\b", text):
+        base = CONTRACTION_TAIL.sub("", w)
+        if (len(base) < 3 or base in PRO_WORDS or w in PRO_WORDS
+                or is_real(base, words) or "'" in base):
+            continue
+        out.append(w)
+    return out
+
 
 LONG_SENTENCE = 30   # words. Chosen register is short sentences and fragments.
 
@@ -345,7 +392,7 @@ def rhythm(lengths):
 def active_checks(pro):
     if not pro:
         return CHECKS
-    out = [(cid, sev, pat, PRO_MESSAGES.get(cid, msg))
+    out = [(cid, sev, PRO_PATTERNS.get(cid, pat), PRO_MESSAGES.get(cid, msg))
            for cid, sev, pat, msg in CHECKS if cid not in PRO_SKIP]
     return out + PRO_CHECKS
 
@@ -354,6 +401,11 @@ def scan(lines, pro=False):
     """Return {check_id: (severity, message, [line numbers], total hits)}."""
     checks = active_checks(pro)
     found = {}
+    seen_words = set()
+    long_msg = (f"sentence over {LONG_SENTENCE} words: split it. a long sentence is fine "
+                "next to short ones, a run of them is not." if pro else
+                f"sentence over {LONG_SENTENCE} words: the register is short sentences, "
+                "fragments allowed. Chosen from A/B samples.")
     in_fence = False
     para = []   # (line number, text) of the paragraph being read
     lengths = []
@@ -362,9 +414,7 @@ def scan(lines, pro=False):
         lengths.extend(sentence_lengths(para))
         n_long = long_sentences(para)
         if n_long:
-            rec = found.setdefault("longsentence", ["low",
-                  f"sentence over {LONG_SENTENCE} words: the register is short sentences, "
-                  "fragments allowed. Chosen from A/B samples.", [], 0])
+            rec = found.setdefault("longsentence", ["low", long_msg, [], 0])
             rec[2].append(para[0][0])
             rec[3] += n_long
         para.clear()
@@ -391,6 +441,15 @@ def scan(lines, pro=False):
                 rec = found.setdefault(cid, [sev, msg, [], 0])
                 rec[2].append(n)
                 rec[3] += len(hits)
+        if pro:
+            bad = misspellings(prose)
+            if bad:
+                rec = found.setdefault("spelling", ["low", "", [], 0])
+                seen_words.update(bad)
+                rec[1] = ("possible misspelling (old word list, so read each one): "
+                          + ", ".join(sorted(seen_words)[:12]))
+                rec[2].append(n)
+                rec[3] += len(bad)
         if not is_heading and not pro:
             caps = sum(1 for rx in JARGON_RX for m in rx.finditer(prose)
                        if m.group() != m.group().lower())

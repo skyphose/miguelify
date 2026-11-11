@@ -164,6 +164,9 @@ class VoiceChecks(unittest.TestCase):
         self.assertIn("hook", pro(["I'm thrilled to share my latest project."]))
         self.assertIn("hook", pro(["The result? 40% faster. Thoughts?"]))
         self.assertIn("hashtags", pro(["#3DPrinting #TCG #MTG #Pokemon"]))
+        self.assertIn("spacedhyphen", pro(["Resume night is Tuesday - come by."]))
+        self.assertIn("emdash", pro(["Resume night \u2014 come by."]))
+        self.assertIn("spelling", pro(["We'll recieve your resumes."]))
 
     def test_pro_mode_passes_professional_copy(self):
         lines = [
@@ -172,7 +175,8 @@ class VoiceChecks(unittest.TestCase):
             "If you fill your box to the brim, this isn't for you. I printed v1.0 at 66 x 88 mm.",
             "- Export the STL from OpenSCAD, e.g. for a bigger box.",
             "`coin_d` sets the well. See the GitHub repo.",
-            "https://github.com/skyphose/boulder-dice-insert #3dprinting #mtg",
+            "https://github.com/skyphose/boulder-dice-insert #3DPrinting #MTG",
+            "Resume review night is Tuesday, Nov 18, 6\u20138 pm, in room 1300.",
         ]
         self.assertEqual(set(vc.scan(lines, pro=True)), set())
 

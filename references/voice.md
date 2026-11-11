@@ -194,6 +194,22 @@ letter" after the lowercase-everything rule of the same day.
 Across the four rounds: 16 questions, 8 rule changes, 8 confirmations. Rounds 2 and 4
 were mostly confirmations, which is what convergence looks like.
 
+## A/B round 5 (2026-11-11), the professional register
+
+For `pro/SKILL.md`, which keeps full standard mechanics (spelling, capitals,
+apostrophes, punctuation) and tunes only the tone. Samples were club-event captions and
+a project post, with invented details.
+
+| Question | Pick | Rejected |
+|---|---|---|
+| Warmth | **C**, casual: an opening question about the reader's situation, "tear it apart (nicely)", "There's pizza, too!" | reserved, no "we"; semi-casual, one parenthetical and a concrete payoff |
+| Asides | **B**, one parenthetical | none; a deadpan closing joke |
+| Limits | **C**, "Fair warning: this size is untested. Mine was 66 x 88 mm. Measure first and you'll be fine." | plain first-person statement; "Quick caveat:" |
+| Ending | **C**, action plus a send-off: "Sign up through the link in bio. See you there!" | the bare action; action plus an urgency line |
+
+The pattern: casual in warmth and endings, restrained in humor. Personality goes into
+one aside and the send-off, not into jokes.
+
 ## Chat-only, do not publish
 
 Absent terminal periods (101 of 103). That is keyboard speed, and full stops come back
