@@ -25,14 +25,17 @@ which register he wants, ask in one line: "personal or professional?"
 
 ## Where the rules come from
 
+Paths in this file are relative to this skill's folder.
+
+
 Nothing here is new taste. Every rule is one of these:
 
 - **Kept from miguelify.** Measured from 108 messages he typed by hand (1,446 words) and
   the repo text he has shipped, then settled across four A/B rounds on 2026-09-14 where
-  he picked between rendered variants. `~/.claude/skills/miguelify/references/voice.md`
+  he picked between rendered variants. `references/voice.md`
   has the counts and the picks.
 - **From Wikipedia's AI cleanup project.** [WP:AISIGNS](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing),
-  read in full on 2026-11-09. `~/.claude/skills/miguelify/references/ai-tells.md` maps
+  read in full on 2026-11-09. `references/ai-tells.md` maps
   every pattern to its fix.
 - **Changed for this register.** Only the four keyboard habits in "What changes" below.
   Each one was a deliberate personal-register choice, not a finding about what makes
@@ -142,7 +145,7 @@ Still out, as in his A/B round: the chat softeners "honestly", "basically", "jus
 
 ## AI tells
 
-Everything in miguelify's list applies: `~/.claude/skills/miguelify/references/ai-tells.md`.
+Everything in miguelify's list applies: `references/ai-tells.md`.
 The short version, with linter ids:
 
 - Significance nobody asked for: "stands as a testament", "plays a pivotal role",
@@ -189,7 +192,19 @@ it does, then what it costs or what did not work, then the link. Usually under 1
 words. Stop after the link. No call to action unless there is a real one ("Issues and
 pull requests welcome" is real for a repo, "Follow for more" is not).
 
-**Model listings.** As miguelify's `surfaces.md`, with standard caps. Title says what it
+**Instagram and Facebook captions.** Same order as a post, shorter. The first line is
+all most people see before "more", so it carries the what and the when: "Resume
+review night, Tue Nov 18, 6-8 pm, room 1300." Date, time and place as plain figures,
+never "this week" or "soon". Links do not work in Instagram captions, so "Link in
+bio" is a real call to action there and the only one. Hashtags zero to three, at the
+end. When a set of scheduled captions is reviewed together, check they do not all
+open the same way: a series that starts every post with "Join us" is its own tell.
+
+**Slide text.** One claim per slide, with its number. Titles in sentence case with no
+full stop. Body text as short as it can be while staying a sentence a person would say.
+No three-word triads, no "Key takeaways" slide that repeats the deck.
+
+**Model listings.** As miguelify's `references/surfaces.md`, with standard caps. Title says what it
 is plus the one differentiator, in sentence case: "Universal dice insert for
 top-opening deck boxes - with or without a coin well". Summary is spec first. The hard
 numbers in a blockquote. The trade-off as a number, then who it is not for. What was not
@@ -212,10 +227,12 @@ adjectives about himself ("passionate", "driven", "innovative").
 ## Workflow
 
 1. Read the whole draft. Never rewrite from a summary of it.
-2. Lint it: `python3 ~/.claude/skills/miguelify/tools/voicecheck.py --pro <file>`.
-   For pasted text, write it to a scratch file first. It catches the mechanical tells
-   and nothing else. It also greps for the private strings in
-   `~/.claude/skills/miguelify/references/private.md`; exit 2 is a publish-blocker.
+2. Lint it: `python3 tools/voicecheck.py --pro <file>`, with the path taken from this
+   skill's own folder. For pasted text, write it to a scratch file first. It catches
+   the mechanical tells and nothing else. Where `references/private.md` exists (his
+   machine only, never uploaded) it also greps for those private strings: exit 2 is a
+   publish-blocker. Without it, anything shaped like an email, home path, IP or token
+   is still flagged for review.
 3. Content pass, sentence by sentence, as above. Check every claim against what was
    actually done.
 4. Rewrite against "What stays" and "What changes". The judgment calls are the ones

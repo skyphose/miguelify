@@ -11,3 +11,6 @@ voice_corpus.txt
 __pycache__/
 *.pyc
 .DS_Store
+
+# built skill zips
+dist/
