@@ -126,6 +126,20 @@ the linter is a floor, not a passing grade. it catches what can be counted. the 
 calls, downgrading an unearned claim or cutting a conclusion that just restates the
 document, still need a careful read.
 
+## professional mode
+
+`pro/SKILL.md` is a second skill, `miguelify-pro`, for posts and listings that should
+read careful, not typed. same research, same ai-tell rules, same content pass.
+four things change: standard capitalization, apostrophes back in contractions, no
+deliberate typos, no caps for emphasis. it also flags the post template: "thrilled to
+share", "thoughts?", a wall of hashtags. lint with `tools/voicecheck.py --pro FILE`.
+
+install it next to the main skill:
+
+```
+ln -s ~/.claude/skills/miguelify/pro ~/.claude/skills/miguelify-pro
+```
+
 ## what it isnt
 
 this encodes MY voice, measured from my writing. run it on your text and youll get a

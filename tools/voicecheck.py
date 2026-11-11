@@ -5,6 +5,8 @@ Usage:  voicecheck.py FILE [FILE...]
         voicecheck.py --tracked        every file git tracks in the current repo
         voicecheck.py --git            author, committer and message of every commit
                                        on the current branch
+        voicecheck.py --pro FILE...    professional register (pro/SKILL.md): standard
+                                       caps and apostrophes, plus post-template hooks
         git diff --cached --name-only | xargs voicecheck.py
 
 The flags combine. `voicecheck.py --tracked --git` is the pre-push check.
@@ -194,6 +196,38 @@ CHECKS += [
      "lowercase, often a question."),
 ]
 
+# --pro: the professional register (pro/SKILL.md). Same content rules and AI tells,
+# but standard capitalization, apostrophes in contractions and no deliberate slips.
+# These checks are personal-register rules, so pro mode drops them.
+PRO_SKIP = {"apostrophe", "uncontracted", "namecaps"}
+PRO_MESSAGES = {
+    "titlecase": "Title Case heading: use sentence case. Title Case is a WP:AISIGNS formatting tell.",
+    "curly": "curly quote or apostrophe (WP:AICURLY): use straight quotes.",
+}
+PRO_CHECKS = [
+    ("bare", "med",
+     r"\b(?:dont|doesnt|didnt|isnt|arent|wasnt|werent|wouldnt|couldnt|shouldnt|hasnt|"
+     r"havent|hadnt|youre|theyre|thats|ive|im|youve|theyve|weve)\b",
+     "contraction with no apostrophe: personal register. professional copy keeps it: "
+     "don't, isn't, you're, that's."),
+    ("lowerstart", "low",
+     r"(?:^(?:#{1,6} |\s*(?:[-*+]|\d+\.)\s+)?|(?:[!?]|(?<!e\.g)(?<!i\.e)(?<!etc)(?<!vs)\.)\s+)(?!https?://|www\.)[a-z]",
+     "sentence or bullet starts lowercase: professional copy uses standard capitalization."),
+    ("lowerI", "med", r"(?<![\w.])i(?=\s|'|,)",
+     "lowercase 'i' as a pronoun: capitalize it."),
+    ("hook", "med",
+     r"(?i)\b(?:I'?m|we'?re) (?:thrilled|excited|delighted|proud|humbled|honou?red) to "
+     r"(?:announce|share|introduce|launch)|\bhere'?s the thing\b|\blet that sink in\b|"
+     r"\bhere'?s what (?:I|we) learned\b|\bwhat do you think\?|\bthoughts\?|"
+     r"\bdrop (?:a|your) (?:comment|thoughts)|\bagree\?\s*$|\bgame[- ]chang|"
+     r"\b(?:big|huge) news\b|\bstay tuned\b|\bthe secret\?|\bthe result\?|"
+     r"\bspoiler:|\bhot take\b|\bunpopular opinion\b",
+     "post-template hook or engagement bait: open on what was made or found, end on the "
+     "last real fact or the link."),
+    ("hashtags", "low", r"(?:#\w+\s*){4,}",
+     "a wall of hashtags: zero to three, at the end, in plain words."),
+]
+
 LONG_SENTENCE = 30   # words. Chosen register is short sentences and fragments.
 
 # Rhythm. Since mid-2026 the newest models drop em dashes entirely and hold every
@@ -222,7 +256,7 @@ PRIVATE = os.path.join(SELF_DIR, "references", "private.md")
 PROFILE = os.path.join(SELF_DIR, "references", "profile.json")
 JARGON = os.path.join(SELF_DIR, "references", "jargon.txt")
 RULEBOOK_FILES = {"SKILL.md", "LICENSE", ".gitignore"}
-RULEBOOK_DIRS = {"references", "tools", "examples", "tests"}
+RULEBOOK_DIRS = {"references", "tools", "examples", "tests", "pro"}
 # The tests plant emails, paths and keys on purpose. Listed terms are still a hard
 # block there; only the generic review tier steps aside.
 GENERIC_SKIP_DIRS = {"tests"}
@@ -308,8 +342,17 @@ def rhythm(lengths):
     return None
 
 
-def scan(lines):
+def active_checks(pro):
+    if not pro:
+        return CHECKS
+    out = [(cid, sev, pat, PRO_MESSAGES.get(cid, msg))
+           for cid, sev, pat, msg in CHECKS if cid not in PRO_SKIP]
+    return out + PRO_CHECKS
+
+
+def scan(lines, pro=False):
     """Return {check_id: (severity, message, [line numbers], total hits)}."""
+    checks = active_checks(pro)
     found = {}
     in_fence = False
     para = []   # (line number, text) of the paragraph being read
@@ -340,13 +383,15 @@ def scan(lines):
             flush()               # a heading is not part of any paragraph
         else:
             para.append((n, prose))
-        for cid, sev, pat, msg in CHECKS:
-            hits = re.findall(pat, prose)
+        for cid, sev, pat, msg in checks:
+            # a code span can open a sentence, so it stands in as a capital here
+            target = INLINE_CODE.sub("C", line) if cid == "lowerstart" else prose
+            hits = re.findall(pat, target)
             if hits:
                 rec = found.setdefault(cid, [sev, msg, [], 0])
                 rec[2].append(n)
                 rec[3] += len(hits)
-        if not is_heading:
+        if not is_heading and not pro:
             caps = sum(1 for rx in JARGON_RX for m in rx.finditer(prose)
                        if m.group() != m.group().lower())
             if caps:
@@ -482,7 +527,8 @@ def is_binary(path):
 def main(argv):
     flags = {a for a in argv if a.startswith("--")}
     paths = [a for a in argv if not a.startswith("--")]
-    unknown = flags - {"--tracked", "--git"}
+    unknown = flags - {"--tracked", "--git", "--pro"}
+    pro = "--pro" in flags
     if unknown:
         print(f"unknown flag(s): {' '.join(sorted(unknown))}\n")
         print(__doc__)
@@ -532,7 +578,7 @@ def main(argv):
             print(f"{path}: skipped, this is the miguelify skill's own rulebook")
             continue
 
-        found = scan(lines)
+        found = scan(lines, pro=pro)
         total = sum(rec[3] for rec in found.values())
         grand += total
         if not found:

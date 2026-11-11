@@ -156,6 +156,30 @@ class VoiceChecks(unittest.TestCase):
         self.assertNotIn("rhythm", found_ids(bursty))
         self.assertNotIn("rhythm", found_ids(["short.", "also short."]))
 
+    def test_pro_mode_flags_the_personal_register(self):
+        pro = lambda lines: set(vc.scan(lines, pro=True))
+        got = pro(["this isnt for you. i printed v1.0 at 66 x 88, not this one."])
+        self.assertTrue({"bare", "lowerI", "lowerstart"} <= got)
+        self.assertIn("lowerstart", pro(["## will it fit my box?"]))
+        self.assertIn("hook", pro(["I'm thrilled to share my latest project."]))
+        self.assertIn("hook", pro(["The result? 40% faster. Thoughts?"]))
+        self.assertIn("hashtags", pro(["#3DPrinting #TCG #MTG #Pokemon"]))
+
+    def test_pro_mode_passes_professional_copy(self):
+        lines = [
+            "## Will it fit my box?",
+            "The slab takes 18.6 mm of the 67.5 mm interior, about a quarter.",
+            "If you fill your box to the brim, this isn't for you. I printed v1.0 at 66 x 88 mm.",
+            "- Export the STL from OpenSCAD, e.g. for a bigger box.",
+            "`coin_d` sets the well. See the GitHub repo.",
+            "https://github.com/skyphose/boulder-dice-insert #3dprinting #mtg",
+        ]
+        self.assertEqual(set(vc.scan(lines, pro=True)), set())
+
+    def test_pro_mode_keeps_the_ai_tells(self):
+        self.assertTrue({"emdash", "aivocab", "negpar"} <= set(vc.scan(
+            ["It's not just a tray \u2014 it's a pivotal upgrade."], pro=True)))
+
     def test_inline_code_is_a_literal(self):
         self.assertEqual(found_ids(["the `OpenSCAD — repository` file"]), set())
 
